@@ -14,11 +14,11 @@ Gui 1 Mic Main
 Gui 4 Mic Discord
 Gui 3 FindMicID
 Gui 5 Fast Note
-;16 เพิ่ม Feature Possibility
+v16 เพิ่ม Feature Possibility
 แก้บัคSave
 เพิ่ม Time to Click
 
-16.2. คลิกขวาค้าง
+v16.2. คลิกขวาค้าง
 ลบการเปลี่ยนภาษา auto หากกำลัง planting ใน valorant
 
 v17 Sync Mic
@@ -123,7 +123,6 @@ v23.1.3 ไม่ยึด RAlt แล้ว
 */
 ;ดึงข้อมูลของ UHotkey
 
-
 IniRead, LastRun, UHotkey.ini, Initialization, SaveLastRun
 IniRead, MICID, UHotkey.ini, Initialization, SaveMICID
 IniRead, P_Med, UHotkey.ini, Initialization, SaveP_Med
@@ -131,7 +130,42 @@ IniRead, turn, UHotkey.ini, Initialization, saveturn
 IniRead, dismic, UHotkey.ini, Initialization, savedismic
 IniRead, Dark_Mode, UHotkey.ini, Initialization, saveDark_Mode
 IniRead, NotiPopup, UHotkey.ini, Initialization, saveNotiPopup
-IniRead, ClearClipHistoryWhenPasswordManagerAutoclearclipboard, UHotkey.ini, Initialization, saveClearClipHistoryWhenPasswordManagerAutoclearclipboard
+IniRead, DailySiteCheckIn, UHotkey.ini, Initialization, saveDailySiteCheckIn
+IniRead, DailySiteCheckInBrowser, UHotkey.ini, Initialization, saveDailySiteCheckInBrowser
+IniRead, DetectDiscordMic, UHotkey.ini, Initialization, saveDetectDiscordMic
+IniRead, TimeIdleCheck, UHotkey.ini, Initialization, saveTimeIdleCheck
+if (saveDark_Mode=="ERROR")
+{
+    Dark_Mode = 0
+}
+if (saveNotiPopup=="ERROR")
+{
+    NotiPopup = 0
+}
+if (saveturn=="ERROR")
+{
+    turn = 1
+}
+if (savedismic=="ERROR")
+{
+    dismic = 1
+}
+if (saveDailySiteCheckIn=="ERROR")
+{
+    DailySiteCheckIn = 
+}
+if (saveDailySiteCheckInBrowser=="ERROR")
+{
+    DailySiteCheckInBrowser = 
+}
+if (saveDetectDiscordMic=="ERROR")
+{
+    dismic = 1
+}
+if (saveTimeIdleCheck=="ERROR")
+{
+    TimeIdleCheck = 1
+}
 #Include D:\Autohotkey\Gdip_All.ahk
 #Include D:\Autohotkey\Class_ImageButton.ahk
 #Include D:\Autohotkey\UseGDIP.ahk
@@ -194,7 +228,6 @@ rightMonitorWidth = 1920
 rightMonitorHeight = 1080
 gui5 = 0 ;ปิดFast Note Gui
 mic = 1 ;ค่าdefaultเป็นปิด
-TimeIdleCheck = 1 ;ค่าdefaultเป็นเปิด
 Time_Click = 0 ;ค่าdefaultเป็นปิด
 P_Med_Work = 1 ;ค่าdefaultเป็นปิด
 enablestopwatch = 0 ;ปิดเป็นค่าdefault
@@ -238,20 +271,29 @@ if (dismic = 1)
 {
     Gui, 4: Color, 1BFF00
 }
-else if (dismic = 0)
+Else if (dismic = 0)
 {
     Gui, 4: Color, FF0000
 }
 ;-----------------------------------------------------------------------------
 ;--------------------------Auto Run---------------------
-if (A_DD != LastRun)
+if (A_DD != LastRun) &&  && (DailySiteCheckInBrowser != "")
 {
-    Run, D:\Ice (PC)\Chrome Shortcut\I (Private Account) - Chrome
-    sleep 9000
-    Run, https://act.hoyolab.com/ys/event/signin-sea-v3/index.html?act_id=e202102251931481&lang=en-us
+    Run, %DailySiteCheckInBrowser%
+    if (ErrorLevel = ERROR)
+    {
+        ToolTip, Error to run browser,,,2
+    }
+    sleep 2000
+    Run, %DailySiteCheckIn%
+    if (ErrorLevel = ERROR)
+    {
+        ToolTip, Error to go to daily check-in site,,,2
+    }
     ;gosub, waittoclicklogin
 }
 LastRun = %A_DD%
+GuiControl,2:, DailySiteCheckIn_Text, DailySiteCheckIn | Today checked
 gosub, Save
 SetTimer ,Loop, 5000
 
@@ -293,7 +335,7 @@ PgUp & PgDn::
         y6 := y5 - 200
         guimain = 1
         ;Gui, 2: +AlwaysOnTop
-        Gui, 2: Add, Groupbox, x3 y1 w210 h210, Hotkey
+        Gui, 2: Add, Groupbox, x3 y1 w210 h210, In the main UI
         Gui, 2: Add, Button, x20 y20 w80 h30 gTurnScreenOff hWndhBtn1, TurnMonitorOff
         if (Dark_Mode = 1)
             ImageButton.Create(hBtn1, IBBtnStyles*)
@@ -346,14 +388,14 @@ PgUp & PgDn::
         {
             Gui, 2: Add, Text, x5 y220 w110 h17 vStopWatchShow,StopWatch is disable
         }
-        Gui, 2: Add, Text, x220 y220 w350 h17 vTimeIdle,TimeIdleKey : 0 sec, TimeIdleMouse : 0 sec
+        Gui, 2: Add, Text, x220 y98 w350 h17 vTimeIdle,TimeIdleKey : 0 sec, TimeIdleMouse : 0 sec
         if (TimeIdleCheck = 1)
         {
-            Gui, 2: Add, CheckBox, x220 y236 w350 h17 vTimeIdleCheck +Checked gac_idle_checking,Idle checking
+            Gui, 2: Add, CheckBox, x220 y115 w350 h17 vTimeIdleCheck +Checked gac_idle_checking,Idle checking - AutoMuteMic
         }
         else
         {
-            Gui, 2: Add, CheckBox, x220 y236 w350 h17 vTimeIdleCheck gac_idle_checking,Idle checking
+            Gui, 2: Add, CheckBox, x220 y115 w350 h17 vTimeIdleCheck gac_idle_checking,Idle checking - AutoMuteMic
         }
         Gui, 2: Add, Button, x120 y140 w40 h30 gLA1 hWndhBtn1,เรียง LA1
         if (Dark_Mode = 1)
@@ -371,8 +413,8 @@ PgUp & PgDn::
             Gui, 2: Add, Checkbox, x117 y177 w86 h23 gAc_AutoCollapseBookmarkBar vautocollapsebookmarkbar, AutoCollapseBookmarkBar
         }
 
-        Gui, 2: Add, Groupbox, x220 y1 w250 h210, Universal Hotkey
-
+        Gui, 2: Add, Groupbox, x220 y1 w250 h90, Hotkey
+        /*
         Gui, 2: Add, Button, x226 y20 w240 h15 +Disabled hWndhBtn1,PageUp+PageDown = Open Main GUI
         if (Dark_Mode = 1)
             ImageButton.Create(hBtn1, IBBtnStyles*)
@@ -391,15 +433,16 @@ PgUp & PgDn::
         Gui, 2: Add, Button, x226 y1355 w240 h15 +Disabled hWndhBtn1,Alt+Shift+R = Move Window to another monitor
         if (Dark_Mode = 1)
             ImageButton.Create(hBtn1, IBBtnStyles*)
+        */
 
-        Gui, 2: Add, Text, x228 y147 w18 h25, Alt
-        Gui, 2: Add, Button, x244 y139 w80 h30 gClickMic vClickMic hWndhBtn1,%Showmic%
+        Gui, 2: Add, Text, x228 y28 w18 h25, Alt
+        Gui, 2: Add, Button, x244 y20 w80 h30 gClickMic vClickMic hWndhBtn1,%Showmic%
         ;if (Dark_Mode = 1)
             ;ImageButton.Create(hBtn1, IBBtnStyles*)
-        Gui, 2: Add, Edit, x245 y169 w78 h30 limit2 vMICID gAc_MICID_Change hwndedit1,%MICID%
+        Gui, 2: Add, Edit, x245 y50 w78 h30 limit2 vMICID gAc_MICID_Change hwndedit1,%MICID%
         if (Dark_Mode = 1)
             CtlColors.Attach(edit1, "1E1E1E", "FFFFFF")
-        Gui, 2: Add, Text, x227 y172 w18 h25, Mic ID
+        Gui, 2: Add, Text, x227 y53 w18 h25, Mic ID
         if (mic = 1 )
         {
             GuiControl,2:, ClickMic, Toggle mic is OFF
@@ -413,21 +456,53 @@ PgUp & PgDn::
 
         if (EnablePushtotalk=1)
         {
-            Gui, 2: Add, Checkbox, x331 y150 w120 h23 +checked gAcEnablePushtotalk vEnablePushtotalk, Enable Push to talk
+            Gui, 2: Add, Checkbox, x331 y16 w120 h23 +checked gAcEnablePushtotalk vEnablePushtotalk, Enable Push to talk
         }
         else
         {
-            Gui, 2: Add, Checkbox, x331 y150 w120 h23 gAcEnablePushtotalk vEnablePushtotalk, Enable Push to talk
+            Gui, 2: Add, Checkbox, x331 y16 w120 h23 gAcEnablePushtotalk vEnablePushtotalk, Enable Push to talk
         }
 
         if (SyncMic=1)
         {
-            Gui, 2: Add, Checkbox, x331 y170 w80 h23 +checked gAcSyncMic vSyncMic, SyncMic
+            Gui, 2: Add, Checkbox, x331 y33 w137 h23 +checked gAcSyncMic vSyncMic, SyncDiscordAndPC'sMic
         }
         else
         {
-            Gui, 2: Add, Checkbox, x331 y170 w80 h23 gAcSyncMic vSyncMic, SyncMic
+            Gui, 2: Add, Checkbox, x331 y33 w137 h23 gAcSyncMic vSyncMic, SyncDiscordAndPC'sMic
         }
+
+        if (DetectDiscordMic=1)
+        {
+            Gui, 2: Add, Checkbox, x331 y50 w137 h23 +checked gAcDetectDiscordMic vDetectDiscordMic, DetectDiscordMic
+        }
+        else
+        {
+            Gui, 2: Add, Checkbox, x331 y50 w137 h23 gAcDetectDiscordMic vDetectDiscordMic, DetectDiscordMic
+        }
+        
+        if (A_DD = LastRun)
+        {
+            Gui, 2: Add, Groupbox, x220 y134 w250 h77, DailySiteCheckIn | Today checked
+        }
+        Else if (A_DD = LastRun + 1)
+        {
+            Gui, 2: Add, Groupbox, x220 y134 w250 h77 vDailySiteCheckIn_Text, DailySiteCheckIn | Yesterday is the lastest
+        }
+        Else
+        {
+            Gui, 2: Add, Groupbox, x220 y134 w250 h77 vDailySiteCheckIn_Text, DailySiteCheckIn
+        }
+        
+        Gui, 2: Add, Text, x228 y157 w18 h25, Url
+        Gui, 2: Add, Edit, x247 y153 w212 h22 vDailySiteCheckIn gAc_DailySiteCheckIn hwndedit1,%DailySiteCheckIn%
+        if (Dark_Mode = 1)
+            CtlColors.Attach(edit1, "1E1E1E", "FFFFFF")
+
+        Gui, 2: Add, Text, x225 y183 w25 h25, Path
+        Gui, 2: Add, Edit, x247 y179 w212 h22 vDailySiteCheckInBrowser gAc_DailySiteCheckInBrowser hwndedit1,%DailySiteCheckInBrowser%
+        if (Dark_Mode = 1)
+            CtlColors.Attach(edit1, "1E1E1E", "FFFFFF")
 
         Gui, 2: Add, Button, x470 y1 w30 h30 gExitPro hWndhBtn1, Exit
         if (Dark_Mode = 1)
@@ -447,18 +522,18 @@ PgUp & PgDn::
         if (Dark_Mode = 1)
             CtlColors.Attach(edit1, "1E1E1E", "FFFFFF")
 
-        Gui, 2: Add, Groupbox, x3 y250 w250 h50, Aim
-        Gui, 2: Add, Text, x10 y267 w150 h15 vP_OutMed, Possibility to be Med : %P_Med%
+        ;Gui, 2: Add, Groupbox, x3 y250 w250 h50, Aim
+        ;Gui, 2: Add, Text, x10 y267 w150 h15 vP_OutMed, Possibility to be Med : %P_Med%
         ;Gui, 2: Add, Button, x10 y300 w30 h30 gAc_P_Med, Start
-        if (P_Med_Work=1)
-        {
-            Gui, 2: Add, Checkbox, x160 y262 w80 h23 +checked vP_Med_Work gAc_Med_Work, Work?
-        }
-        else
-        {
-            Gui, 2: Add, Checkbox, x160 y262 w80 h23 vP_Med_Work gAc_Med_Work, Work?
-        }
-
+        ;if (P_Med_Work=1)
+        ;{
+            ;Gui, 2: Add, Checkbox, x160 y262 w80 h23 +checked vP_Med_Work gAc_Med_Work, Work?
+        ;}
+        ;else
+        ;{
+            ;Gui, 2: Add, Checkbox, x160 y262 w80 h23 vP_Med_Work gAc_Med_Work, Work?
+        ;}
+/*
         Gui, 2: Add, Groupbox, x3 y300 w150 h50, Time to LClick
         Gui, 2: Add, Text, x7 y317 w20 h15,HH:
         Gui, 2: Add, Edit, x28 y315 w18 h15 limit2 gAc_TClick_HH vTClick_HH hwndedit1,00
@@ -482,7 +557,7 @@ PgUp & PgDn::
             ;if (Dark_Mode = 1)
             ;ImageButton.Create(hBtn1, IBBtnStyles*)
         }
-
+*/
         if (Dark_Mode =1)
         {
             Gui, 2: Add, Checkbox, x410 y410 w80 h23 +checked gAc_Dark_Mode vDark_Mode, Dark Mode
@@ -501,16 +576,16 @@ PgUp & PgDn::
             Gui, 2: Add, Checkbox, x320 y410 w80 h23 gAc_NotiPopup vNotiPopup, NotiPopup
         }
 
-        if (ClearClipHistoryWhenPasswordManagerAutoclearclipboard =1)
-        {
-            Gui, 2: Add, Checkbox, x120 y410 w180 h23 +checked gAc_ClearClipHistoryWhenPasswordManagerAutoclearclipboard vClearClipHistoryWhenPasswordManagerAutoclearclipboard, ClearClipHistoryWhenPasswordManagerAutoclearclipboard
-        }
-        else
-        {
-            Gui, 2: Add, Checkbox, x120 y410 w180 h23 gAc_ClearClipHistoryWhenPasswordManagerAutoclearclipboard vClearClipHistoryWhenPasswordManagerAutoclearclipboard, ClearClipHistoryWhenPasswordManagerAutoclearclipboard
-        }
+        ;if (ClearClipHistoryWhenPasswordManagerAutoclearclipboard =1)
+        ;{
+            ;Gui, 2: Add, Checkbox, x120 y410 w180 h23 +checked gAc_ClearClipHistoryWhenPasswordManagerAutoclearclipboard vClearClipHistoryWhenPasswordManagerAutoclearclipboard, ClearClipHistoryWhenPasswordManagerAutoclearclipboard
+        ;}
+        ;else
+        ;{
+            ;Gui, 2: Add, Checkbox, x120 y410 w180 h23 gAc_ClearClipHistoryWhenPasswordManagerAutoclearclipboard vClearClipHistoryWhenPasswordManagerAutoclearclipboard, ClearClipHistoryWhenPasswordManagerAutoclearclipboard
+        ;}
 
-        Gui, 2: Show, w500 h440 x%x6% y%y6%, สวัสดี นพ. ชัยวุฒิ เจริญศรีสันต์ | UH v23.1.3
+        Gui, 2: Show, w500 h440 x%x6% y%y6%, UniHotkey v24
         ;gosub, Ac_P_Med
     }
     else
@@ -533,8 +608,6 @@ if (guimain = 1)
     Sec_TimeIdleMou := % Format("{:.3f}",Sec_TimeIdleMou)
     GuiControl,2:, TimeIdle, TimeIdleKey : %Sec_TimeIdleKey% sec, TimeIdleMouse : %Sec_TimeIdleMou% sec
 }
-Gui 2:Default
-GuiControlGet, TimeIdleCheck
 if (A_TimeIdleKeyboard > 120000 && A_TimeIdleMouse > 120000 && TimeIdleCheck=1)
 {
     count := 5
@@ -545,13 +618,13 @@ if (A_TimeIdleKeyboard > 120000 && A_TimeIdleMouse > 120000 && TimeIdleCheck=1)
         if (centicount >= 1)
         {
             centicount := 0
-            Tooltip, Idle mode will turn on in %count% s., Move mouse to cancel
+            ToolTip, Idle mode will turn on in %count% s. Move mouse to cancel,,,2
             count := count-1
         }
         sleep 100
         if (A_TimeIdleKeyboard < 120000 || A_TimeIdleMouse < 120000)
         {
-            Tooltip,
+            ToolTip,,,,1
             return
         }
         if (count <= 0)
@@ -733,7 +806,10 @@ Save:
     savedismic=%dismic%
     saveDark_Mode=%Dark_Mode%
     saveNotiPopup=%NotiPopup%
-    saveClearClipHistoryWhenPasswordManagerAutoclearclipboard=%ClearClipHistoryWhenPasswordManagerAutoclearclipboard%
+    saveDailySiteCheckIn=%DailySiteCheckIn%
+    saveDailySiteCheckInBrowser=%DailySiteCheckInBrowser%
+    saveDetectDiscordMic=%DetectDiscordMic%
+    saveTimeIdleCheck=%TimeIdleCheck%
     ), UHotkey.ini
 return
 
@@ -741,11 +817,12 @@ Ac_NotiPopup:
 Gui 2:Default
 GuiControlGet, NotiPopup
 return
-
+/*
 Ac_ClearClipHistoryWhenPasswordManagerAutoclearclipboard:
 Gui 2:Default
 GuiControlGet, ClearClipHistoryWhenPasswordManagerAutoclearclipboard
 return
+*/
 
 Ac_Dark_Mode:
     Gui 2:Default
@@ -798,6 +875,21 @@ AcEnablePushtotalk:
     GuiControlGet, EnablePushtotalk
 return
 
+AcDetectDiscordMic:
+    Gui 2:Default
+    GuiControlGet, DetectDiscordMic
+return
+
+Ac_DailySiteCheckIn:
+    Gui 2:Default
+    GuiControlGet, DailySiteCheckIn
+return
+
+Ac_DailySiteCheckInBrowser:
+    Gui 2:Default
+    GuiControlGet, DailySiteCheckIn
+return
+
 Ac_TClick_HH:
     Gui 2:Default
     GuiControlGet, TClick_HH
@@ -809,11 +901,12 @@ Ac_TClick_MM:
     GuiControlGet, TClick_HH
     GuiControlGet, TClick_MM
 return
-
+/*
 Ac_Med_Work:
     Gui 2:Default
     GuiControlGet, P_Med_Work
 Return
+*/
 
 Ac_TClick:
 if (Time_Click = 0)
@@ -1031,7 +1124,7 @@ if (Turn = 0)
 
 if !LangID := GetKeyboardLanguage(WinActive("A"))
 {
-    Tooltip, Failed,,,1
+    Tooltip, Failed,,,2
     return
 }
 
@@ -2320,14 +2413,15 @@ SetTimer ,IndicatorLangguageLClick, 1
 
 ;Detect Discord Mic
 sleep 1
-if (WinActive("Discord"))
+if (WinActive(" - Discord")) && (DetectDiscordMic = 1)
 {
     CoordMode, Pixel, Relative
     WinGetPos, x, y, width, height, A
     
-    WinGet, minMax, MinMax, Discord
+    ;WinGet, minMax, MinMax, Discord
     ;if minMax = 1
     ;{
+        sleep 100
         height2 := height - 30
         PixelGetColor, OutputVarDisMic2, 185, %height2% ;fullscreen mode
     ;else
@@ -2337,7 +2431,8 @@ if (WinActive("Discord"))
     ;}
     ;}
     ;Tooltip, %OutputVarDisMic% %OutputVarDisMic2%
-    if (OutputVarDisMic = 0x3934A5 || OutputVarDisMic2 = 0x322E71)
+    ;Clipboard = %OutputVarDisMic% %OutputVarDisMic2%
+    if (OutputVarDisMic = 0x35318A || OutputVarDisMic = 0x443E97 || OutputVarDisMic2 = 0x2F2B57 || OutputVarDisMic2 = 0x453E6B)
     {
         if (dismic = 1)
         {
@@ -2345,7 +2440,7 @@ if (WinActive("Discord"))
             dismic = 0
         }
     }
-    else if (OutputVarDisMic = 0x282423 || OutputVarDisMic2 = 0xA29C9C)
+    else if (OutputVarDisMic = 0x282423 || OutputVarDisMic = 0x453E3D ||OutputVarDisMic2 = 0xA29C9C || OutputVarDisMic2 = 0xA4A09C)
     {
         if (dismic = 0)
         {
@@ -2463,7 +2558,7 @@ return
 IndicatorLangguageLClick:
 if !LangID := GetKeyboardLanguage(WinActive("A"))
 {
-	Tooltip,Failed,,,1
+	Tooltip, Failed,,,1
 	SetTimer ,IndicatorLangguageLClick, OFF
 	return
 }
@@ -2601,7 +2696,7 @@ while GetKeyState("LCtrl", "P") ; While right mouse button is being held:
 sleep 5
 if !LangID := GetKeyboardLanguage(WinActive("A"))
 {
-    Tooltip, Failed,,,1
+    Tooltip, Failed,,,2
     return
 }
 
@@ -2806,35 +2901,35 @@ return
 	goto, GGTranslate
 return
 
-#IfWinActive | UH v
+#IfWinActive | UniHotkey v
 Numpad1::
 	goto, TurnScreenOff
 return
-#IfWinActive | UH v
+#IfWinActive | UniHotkey v
 Numpad2::
 	goto, TurnLangbar
 return
-#IfWinActive | UH v
+#IfWinActive | UniHotkey v
 Numpad3::
 	goto, FindIDmic
 return
-#IfWinActive | UH v
+#IfWinActive | UniHotkey v
 Numpad4::
 	goto, TranslateShow
 return
-#IfWinActive | UH v
+#IfWinActive | UniHotkey v
 Numpad5::
 	goto, ForgotEntoTh
 return
-#IfWinActive | UH v
+#IfWinActive | UniHotkey v
 Numpad6::
 	goto, ForgotThtoEn
 return
-#IfWinActive | UH v
+#IfWinActive | UniHotkey v
 Numpad7::
 	goto, WindowManager
 return
-#IfWinActive | UH v
+#IfWinActive | UniHotkey v
 Numpad8::
 	goto, Spy
 return
