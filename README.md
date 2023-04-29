@@ -1,9 +1,12 @@
 # UniHotkey AHK edition
 UniHotkey AHk edition is a utility program that provides you much more convenient way to use and manage your Windows PC.
+
 ##How to use
 - `PageUp` + `PageDown` to launch the main UI.
 - the only way to exit this program is to click the `Exit` button in the [main UI](https://github.com/Iz-zzzzz/UniHotkey-AHK-edition/edit/main/README.md#in-the-main-ui)
+
 ## This program provides these features
+
 ### Hotkey
 - `LAlt` + `Shift` + `R` to move window to another moniter. (now supports only 2 monitors)
 - `LAlt` + `Shift` + `A` to toggle Always On Top the active window.
@@ -18,6 +21,7 @@ UniHotkey AHk edition is a utility program that provides you much more convenien
 - `Insert` to decrease the output volume
 - `Pause Break` to increase the output volume
 - `LCtrl` + `LShift` to provide program data that you change the language.
+
 ### In the main UI
 - "Turn off the monitor"
 - "Turn On/Off Language tooltip bar" - this also use to display copied text.
@@ -35,9 +39,11 @@ UniHotkey AHk edition is a utility program that provides you much more convenien
 - "Sync Mic" - sync PC's mic and Discord's mic indicator UI color and mute state.
 - "Dark Mode"
 - "NotiPopup" - Show notification if you "change language", "move the active window to another monitor", "minimize the active window", "reach allow time to play game"
+
 ### Fast Note Text
 - support Realtime, YT, MKV, StopWatch timestamp
 - screenshot the whole screen while saving the note
+
 ### Others
 - launch daily check-in site
 - auto hide tooltip when a window is in full-screen mode.
