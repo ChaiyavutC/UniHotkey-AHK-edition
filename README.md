@@ -1,7 +1,7 @@
 # UniHotkey AHK edition
 UniHotkey AHk edition is a utility program that provides you much more convenient way to use and manage your Windows PC.
 
-##How to use
+## How to use
 - `PageUp` + `PageDown` to launch the main UI.
 - the only way to exit this program is to click the `Exit` button in the [main UI](https://github.com/Iz-zzzzz/UniHotkey-AHK-edition/edit/main/README.md#in-the-main-ui)
 
