@@ -8,14 +8,14 @@ UniHotkey AHk edition is a utility program that provides you much more convenien
 ## This program provides these features
 
 ### Hotkey
-- `LAlt` + `Shift` + `R` to move window to another moniter. (now supports only 2 monitors)
-- `LAlt` + `Shift` + `A` to toggle Always On Top the active window.
-- `LAlt` + `Shift` + `B` to move the active window to backward.
-- `LAlt` + `Shift` + `Q` to move the active window along the mouse cursor position.
-- `LAlt` + `Shift` + `E` to minimize the active window to task bar.
-- `LAlt` + `Shift` + `M` to launch "Fast Note Text" UI which provides a lot of [features](https://github.com/Iz-zzzzz/UniHotkey-AHK-edition#fast-note-text).
-- `LAlt` + `Shift` + `S` to lanuch Addition Menu.
-- `LAlt` + `Shift` + `Arrow(Left/Right/Up/Down)` to move the active window by the arrow.
+- `LAlt` + `LShift` + `R` to move window to another moniter. (now supports only 2 monitors)
+- `LAlt` + `LShift` + `A` to toggle Always On Top the active window.
+- `LAlt` + `LShift` + `B` to move the active window to backward.
+- `LAlt` + `LShift` + `Q` to move the active window along the mouse cursor position.
+- `LAlt` + `LShift` + `E` to minimize the active window to task bar.
+- `LAlt` + `LShift` + `M` to launch "Fast Note Text" UI which provides a lot of [features](https://github.com/Iz-zzzzz/UniHotkey-AHK-edition#fast-note-text).
+- `LAlt` + `LShift` + `S` to lanuch Addition Menu.
+- `LAlt` + `LShift` + `Arrow(Left/Right/Up/Down)` to move the active window by the arrow.
 - `RAlt` to toggle microphone (Push-to-Talk also support)
 - `RCtrl` to change Discord indicator UI color `Red to green` or `Green to Red` (use to sync with Discord Key Blind)
 - `Insert` to decrease the output volume
