@@ -32,7 +32,7 @@ UniHotkey AHk edition is a utility program that provides you much more convenien
 - "Window manager" - launch "Window manager"
 - "Run Spy" - launch "Spy UI" to provide you with some interesting data.
 - "StopWatch" - start the timer by clicking. This button usually uses along the recorder program to provide the correct timestamp in "Fast Note Text"
-- "เรียง LA1/2" - not useable
+- "เรียง LA1/2" - (Doesn't work)
 - "AutoCollapseBookmarkBar" - in popular browsers (Chrome, Edge, Brave). You can show and hide the bookmark bar with a left click under the Browser's address bar.
 - "Time to Click" - emulate left click if time is HH:MM
 - "Idle Checking" - check if the PC is in an idle state, this program will mute the microphone automatically.
@@ -41,8 +41,8 @@ UniHotkey AHk edition is a utility program that provides you much more convenien
 - "NotiPopup" - Show notification if you "change language", "move the active window to another monitor", "minimize the active window", "reach allow time to play game"
 
 ### Fast Note Text
-- support Realtime, YT, MKV, StopWatch timestamp
-- screenshot the whole screen while saving the note
+- support create Realtime, YT, MKV, StopWatch timestamp.
+- screenshot the whole screen while saving the note.
 
 ### Others
 - launch daily check-in site
