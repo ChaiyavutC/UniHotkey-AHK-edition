@@ -10,7 +10,7 @@ UniHotkey AHk edition is the utility program privide you musch more convinent wa
 - `LAlt` + `Shift` + `B` to move the active window to backward.
 - `LAlt` + `Shift` + `Q` to move the active window along mouse cursor position.
 - `LAlt` + `Shift` + `E` to minimize the active window to task bar.
-- `LAlt` + `Shift` + `M` to lanuch "Fast Note Text" UI which provide a lot of [features]().
+- `LAlt` + `Shift` + `M` to lanuch "Fast Note Text" UI which provide a lot of [features](https://github.com/Iz-zzzzz/UniHotkey-AHK-edition#fast-note-text).
 - `LAlt` + `Shift` + `S` to lanuch Addition Menu.
 - `LAlt` + `Shift` + `Arrow(Left/Right/Up/Down)` to move the active window by the arrow.
 - `RAlt` to toggle microphone (Push-to-Talk also support)
@@ -38,7 +38,6 @@ UniHotkey AHk edition is the utility program privide you musch more convinent wa
 ### Fast Note Text
 - support Realtime, YT, MKV, StopWatch timestamp
 - screenshot whole screen while save note
-- 
 ### Others
 - lanuch daily check in site
 - auto hide tooltip when window is in full screen mode.
