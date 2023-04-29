@@ -277,7 +277,7 @@ Else if (dismic = 0)
 }
 ;-----------------------------------------------------------------------------
 ;--------------------------Auto Run---------------------
-if (A_DD != LastRun) &&  && (DailySiteCheckInBrowser != "")
+if (A_DD != LastRun)
 {
     Run, %DailySiteCheckInBrowser%
     if (ErrorLevel = ERROR)
@@ -585,7 +585,7 @@ PgUp & PgDn::
             ;Gui, 2: Add, Checkbox, x120 y410 w180 h23 gAc_ClearClipHistoryWhenPasswordManagerAutoclearclipboard vClearClipHistoryWhenPasswordManagerAutoclearclipboard, ClearClipHistoryWhenPasswordManagerAutoclearclipboard
         ;}
 
-        Gui, 2: Show, w500 h440 x%x6% y%y6%, UniHotkey v24
+        Gui, 2: Show, w500 h440 x%x6% y%y6%, UniHotkey v24.1
         ;gosub, Ac_P_Med
     }
     else
