@@ -585,7 +585,7 @@ PgUp & PgDn::
             ;Gui, 2: Add, Checkbox, x120 y410 w180 h23 gAc_ClearClipHistoryWhenPasswordManagerAutoclearclipboard vClearClipHistoryWhenPasswordManagerAutoclearclipboard, ClearClipHistoryWhenPasswordManagerAutoclearclipboard
         ;}
 
-        Gui, 2: Show, w500 h440 x%x6% y%y6%, UniHotkey v24.5
+        Gui, 2: Show, w500 h440 x%x6% y%y6%, UniHotkey v24.6
         ;gosub, Ac_P_Med
     }
     else
@@ -629,7 +629,7 @@ if (A_TimeIdleKeyboard > 120000 && A_TimeIdleMouse > 120000 && TimeIdleCheck=1)
         }
         if (count <= 0)
         {
-            Tooltip,
+            ToolTip,,,,2
             if (mic = 0)
             {
                 SoundSet, 100, MASTER, Mute,%MICID%
@@ -637,7 +637,9 @@ if (A_TimeIdleKeyboard > 120000 && A_TimeIdleMouse > 120000 && TimeIdleCheck=1)
                 SoundPlay, %A_ScriptDir%\mute.wav
                 ;run C:\Program Files (x86)\foobar2000\foobar2000.exe /immediate /play "%A_ScriptDir%\mute.wav" /hide 
                 mic = 1
+                break
             }
+            /*
             loop 
             {
                 sleep 5000
@@ -655,13 +657,9 @@ if (A_TimeIdleKeyboard > 120000 && A_TimeIdleMouse > 120000 && TimeIdleCheck=1)
                     break
                 }
             }
+            */
         }
     }
-    if (mic = 0)
-    {
-        return
-    }
-    Return
 }
 /*
 Gui 2:Default
@@ -2901,35 +2899,35 @@ return
 	goto, GGTranslate
 return
 
-#IfWinActive | UniHotkey v
+#IfWinActive UniHotkey v
 Numpad1::
 	goto, TurnScreenOff
 return
-#IfWinActive | UniHotkey v
+#IfWinActive UniHotkey v
 Numpad2::
 	goto, TurnLangbar
 return
-#IfWinActive | UniHotkey v
+#IfWinActive UniHotkey v
 Numpad3::
 	goto, FindIDmic
 return
-#IfWinActive | UniHotkey v
+#IfWinActive UniHotkey v
 Numpad4::
 	goto, TranslateShow
 return
-#IfWinActive | UniHotkey v
+#IfWinActive UniHotkey v
 Numpad5::
 	goto, ForgotEntoTh
 return
-#IfWinActive | UniHotkey v
+#IfWinActive UniHotkey v
 Numpad6::
 	goto, ForgotThtoEn
 return
-#IfWinActive | UniHotkey v
+#IfWinActive UniHotkey v
 Numpad7::
 	goto, WindowManager
 return
-#IfWinActive | UniHotkey v
+#IfWinActive UniHotkey v
 Numpad8::
 	goto, Spy
 return
