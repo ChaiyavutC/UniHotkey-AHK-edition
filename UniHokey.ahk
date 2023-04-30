@@ -585,7 +585,7 @@ PgUp & PgDn::
             ;Gui, 2: Add, Checkbox, x120 y410 w180 h23 gAc_ClearClipHistoryWhenPasswordManagerAutoclearclipboard vClearClipHistoryWhenPasswordManagerAutoclearclipboard, ClearClipHistoryWhenPasswordManagerAutoclearclipboard
         ;}
 
-        Gui, 2: Show, w500 h440 x%x6% y%y6%, UniHotkey v24.3
+        Gui, 2: Show, w500 h440 x%x6% y%y6%, UniHotkey v24.4
         ;gosub, Ac_P_Med
     }
     else
@@ -1085,6 +1085,7 @@ if A_EventInfo = 2 ; Clipboard contains something entirely non-text such as a pi
 else if A_EventInfo = 1 ;Clipboard contains something that can be expressed as text (this includes files copied from an Explorer window).
 {
     StringReplace, ClipboardShow, Clipboard,`r`n,%A_Space%, All
+    StringReplace, ClipboardShow, ClipboardShow,`n,%A_Space%, All
     StringLen, Length, ClipboardShow
     ClipboardShowS := SubStr( ClipboardShow, 1, 40 )
     ClipboardShowL := SubStr( ClipboardShow, -10)
