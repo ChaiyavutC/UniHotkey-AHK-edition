@@ -585,7 +585,7 @@ PgUp & PgDn::
             ;Gui, 2: Add, Checkbox, x120 y410 w180 h23 gAc_ClearClipHistoryWhenPasswordManagerAutoclearclipboard vClearClipHistoryWhenPasswordManagerAutoclearclipboard, ClearClipHistoryWhenPasswordManagerAutoclearclipboard
         ;}
 
-        Gui, 2: Show, w500 h440 x%x6% y%y6%, UniHotkey v24.4
+        Gui, 2: Show, w500 h440 x%x6% y%y6%, UniHotkey v24.5
         ;gosub, Ac_P_Med
     }
     else
@@ -624,7 +624,7 @@ if (A_TimeIdleKeyboard > 120000 && A_TimeIdleMouse > 120000 && TimeIdleCheck=1)
         sleep 100
         if (A_TimeIdleKeyboard < 120000 || A_TimeIdleMouse < 120000)
         {
-            ToolTip,,,,1
+            ToolTip,,,,2
             return
         }
         if (count <= 0)
@@ -663,6 +663,7 @@ if (A_TimeIdleKeyboard > 120000 && A_TimeIdleMouse > 120000 && TimeIdleCheck=1)
     }
     Return
 }
+/*
 Gui 2:Default
 GuiControlGet, P_Med_Work
 if(P_Med_Work = 1)
@@ -709,7 +710,7 @@ if(P_Med_Work = 1)
         GuiControl,2:, P_OutMed,Possibility to be Med : %P_Med%
     }
 }
-
+*/
 MouseGetPos, MToHideToolX, MToHideToolY
 If ( MToHideToolX>=-152 and MToHideToolX<=0 and MToHideToolY <= 1052 and MToHideToolY >= 1018 )
 {
