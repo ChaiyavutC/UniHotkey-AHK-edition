@@ -279,16 +279,16 @@ Else if (dismic = 0)
 ;--------------------------Auto Run---------------------
 if (A_DD != LastRun)
 {
-    Run, %DailySiteCheckInBrowser%
-    if (ErrorLevel = ERROR)
+    Run, %DailySiteCheckInBrowser%,,UseErrorLevel
+    if (ErrorLevel = "ERROR")
     {
-        ToolTip, Error to run browser,,,2
+        ToolTip, Error to run browser, -30, 1028, 2
     }
     sleep 2000
-    Run, %DailySiteCheckIn%
-    if (ErrorLevel = ERROR)
+    Run, %DailySiteCheckIn%,,UseErrorLevel
+    if (ErrorLevel = "ERROR")
     {
-        ToolTip, Error to go to daily check-in site,,,2
+        ToolTip, Error to go to daily check-in site, -30, 1028, 2
     }
     ;gosub, waittoclicklogin
 }
@@ -585,7 +585,7 @@ PgUp & PgDn::
             ;Gui, 2: Add, Checkbox, x120 y410 w180 h23 gAc_ClearClipHistoryWhenPasswordManagerAutoclearclipboard vClearClipHistoryWhenPasswordManagerAutoclearclipboard, ClearClipHistoryWhenPasswordManagerAutoclearclipboard
         ;}
 
-        Gui, 2: Show, w500 h440 x%x6% y%y6%, UniHotkey v24.2
+        Gui, 2: Show, w500 h440 x%x6% y%y6%, UniHotkey v24.3
         ;gosub, Ac_P_Med
     }
     else
@@ -618,7 +618,7 @@ if (A_TimeIdleKeyboard > 120000 && A_TimeIdleMouse > 120000 && TimeIdleCheck=1)
         if (centicount >= 1)
         {
             centicount := 0
-            ToolTip, Idle mode will turn on in %count% s. Move mouse to cancel,,,2
+            ToolTip, Idle mode will turn on in %count% s. Move mouse to cancel, -30, 1028, 2
             count := count-1
         }
         sleep 100
@@ -1124,7 +1124,7 @@ if (Turn = 0)
 
 if !LangID := GetKeyboardLanguage(WinActive("A"))
 {
-    Tooltip, Failed,,,2
+    Tooltip, Failed, -30, 1028, 2
     return
 }
 
@@ -2694,7 +2694,7 @@ while GetKeyState("LCtrl", "P") ; While right mouse button is being held:
 sleep 5
 if !LangID := GetKeyboardLanguage(WinActive("A"))
 {
-    Tooltip, Failed,,,2
+    Tooltip, Failed, -30, 1028, 2
     return
 }
 
