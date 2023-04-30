@@ -585,7 +585,7 @@ PgUp & PgDn::
             ;Gui, 2: Add, Checkbox, x120 y410 w180 h23 gAc_ClearClipHistoryWhenPasswordManagerAutoclearclipboard vClearClipHistoryWhenPasswordManagerAutoclearclipboard, ClearClipHistoryWhenPasswordManagerAutoclearclipboard
         ;}
 
-        Gui, 2: Show, w500 h440 x%x6% y%y6%, UniHotkey v24.1
+        Gui, 2: Show, w500 h440 x%x6% y%y6%, UniHotkey v24.2
         ;gosub, Ac_P_Med
     }
     else
@@ -2559,8 +2559,6 @@ IndicatorLangguageLClick:
 if !LangID := GetKeyboardLanguage(WinActive("A"))
 {
 	Tooltip, Failed,,,1
-	SetTimer ,IndicatorLangguageLClick, OFF
-	return
 }
 
 if (LangID = 0x041e) ;ภาษาไทย
