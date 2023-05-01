@@ -7,7 +7,7 @@ SetWorkingDir %A_ScriptDir% ; Ensures a consistent starting directory.
 
 quote = "
 apostrophe = '
-
+version :="UniHotkey | v.25"
 /*
 Gui 2 Main
 Gui 1 Mic Main
@@ -585,7 +585,7 @@ PgUp & PgDn::
             ;Gui, 2: Add, Checkbox, x120 y410 w180 h23 gAc_ClearClipHistoryWhenPasswordManagerAutoclearclipboard vClearClipHistoryWhenPasswordManagerAutoclearclipboard, ClearClipHistoryWhenPasswordManagerAutoclearclipboard
         ;}
 
-        Gui, 2: Show, w500 h440 x%x6% y%y6%, UniHotkey v24.8
+        Gui, 2: Show, w500 h440 x%x6% y%y6%, %version%
         ;gosub, Ac_P_Med
     }
     else
@@ -1305,6 +1305,28 @@ return
 
 !+b::
     WinSet, Bottom,,A
+return
+
+;Fast Line capture
+#IfWinExist, LINE ahk_class Qt5152QWindowIcon
+!+W::
+WinGet, LineShow, MinMax, ahk_class Qt5152QWindowIcon
+;ToolTip, %LineShow%
+
+;ถ้า minimized
+if (LineShow = -1)
+{
+    WinRestore, ahk_exe LINE.exe
+    ;WinMove, ahk_class Qt5152QWindowIcon,, 430, 411
+}
+WinActivate, ahk_exe LINE.exe
+WinGetPos, x, y, width, height, LINE
+height := height - 151
+ControlClick, x32 y%height%, ahk_class Qt5152QWindowIcon,,,, NA
+if (LineShow = -1)
+{
+    WinMinimize, ahk_class Qt5152QWindowIcon
+}
 return
 
 !+m::
@@ -2897,35 +2919,35 @@ return
 	goto, GGTranslate
 return
 
-#IfWinActive UniHotkey v
+#If WinActive(version)
 Numpad1::
 	goto, TurnScreenOff
 return
-#IfWinActive UniHotkey v
+#If WinActive(version)
 Numpad2::
 	goto, TurnLangbar
 return
-#IfWinActive UniHotkey v
+#If WinActive(version)
 Numpad3::
 	goto, FindIDmic
 return
-#IfWinActive UniHotkey v
+#If WinActive(version)
 Numpad4::
 	goto, TranslateShow
 return
-#IfWinActive UniHotkey v
+#If WinActive(version)
 Numpad5::
 	goto, ForgotEntoTh
 return
-#IfWinActive UniHotkey v
+#If WinActive(version)
 Numpad6::
 	goto, ForgotThtoEn
 return
-#IfWinActive UniHotkey v
+#If WinActive(version)
 Numpad7::
 	goto, WindowManager
 return
-#IfWinActive UniHotkey v
+#If WinActive(version)
 Numpad8::
 	goto, Spy
 return
