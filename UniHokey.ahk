@@ -585,7 +585,7 @@ PgUp & PgDn::
             ;Gui, 2: Add, Checkbox, x120 y410 w180 h23 gAc_ClearClipHistoryWhenPasswordManagerAutoclearclipboard vClearClipHistoryWhenPasswordManagerAutoclearclipboard, ClearClipHistoryWhenPasswordManagerAutoclearclipboard
         ;}
 
-        Gui, 2: Show, w500 h440 x%x6% y%y6%, UniHotkey v24.6
+        Gui, 2: Show, w500 h440 x%x6% y%y6%, UniHotkey v24.7
         ;gosub, Ac_P_Med
     }
     else
@@ -629,7 +629,7 @@ if (A_TimeIdleKeyboard > 120000 && A_TimeIdleMouse > 120000 && TimeIdleCheck=1)
         }
         if (count <= 0)
         {
-            ToolTip,,,,2
+            ToolTip,Idle mode,,,2
             if (mic = 0)
             {
                 SoundSet, 100, MASTER, Mute,%MICID%
@@ -639,7 +639,6 @@ if (A_TimeIdleKeyboard > 120000 && A_TimeIdleMouse > 120000 && TimeIdleCheck=1)
                 mic = 1
                 break
             }
-            /*
             loop 
             {
                 sleep 5000
@@ -653,11 +652,10 @@ if (A_TimeIdleKeyboard > 120000 && A_TimeIdleMouse > 120000 && TimeIdleCheck=1)
                 }
                 if (A_TimeIdleKeyboard < 120000 || A_TimeIdleMouse < 120000)
                 {
-                    Tooltip,
+                    ToolTip,,,,2
                     break
                 }
             }
-            */
         }
     }
 }
