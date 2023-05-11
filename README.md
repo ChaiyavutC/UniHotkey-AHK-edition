@@ -1,4 +1,4 @@
-# UniHotkey AHK edition
+# UniHotkey AHK edition v.25.1
 UniHotkey AHk edition is a utility program that provides you much more convenient way to use and manage your Windows PC.
 
 ## How to use
@@ -16,6 +16,8 @@ UniHotkey AHk edition is a utility program that provides you much more convenien
 - `LAlt` + `LShift` + `M` to launch "Fast Note Text" UI which provides a lot of [features](https://github.com/Iz-zzzzz/UniHotkey-AHK-edition#fast-note-text).
 - `LAlt` + `LShift` + `S` to lanuch Addition Menu.
 - `LAlt` + `LShift` + `Arrow(Left/Right/Up/Down)` to move the active window by the arrow.
+- `LAlt` + `LShift` + `<` to increase active window's opacity.
+- `LAlt` + `LShift` + `>` to decrease active window's opacity.
 - `RAlt` to toggle microphone (Push-to-Talk also support)
 - `RCtrl` to change Discord indicator UI color `Red to green` or `Green to Red` (use to sync with Discord Key Blind)
 - `Insert` to decrease the output volume
@@ -32,13 +34,13 @@ UniHotkey AHk edition is a utility program that provides you much more convenien
 - "Window manager" - launch "Window manager"
 - "Run Spy" - launch "Spy UI" to provide you with some interesting data.
 - "StopWatch" - start the timer by clicking. This button usually uses along the recorder program to provide the correct timestamp in "Fast Note Text"
-- "เรียง LA1/2" - (Doesn't work)
 - "AutoCollapseBookmarkBar" - in popular browsers (Chrome, Edge, Brave). You can show and hide the bookmark bar with a left click under the Browser's address bar.
 - "Time to Click" - emulate left click if time is HH:MM
 - "Idle Checking" - check if the PC is in an idle state, this program will mute the microphone automatically.
 - "Sync Mic" - sync PC's mic and Discord's mic indicator UI color and mute state.
 - "Dark Mode"
 - "NotiPopup" - Show notification if you "change language", "move the active window to another monitor", "minimize the active window", "reach allow time to play game"
+- "Reset Background button" - Reset desktop's background position.
 
 ### Fast Note Text
 - support create Realtime, YT, MKV, StopWatch timestamp.
@@ -57,3 +59,4 @@ UniHotkey AHk edition is a utility program that provides you much more convenien
   4. Dark mode state
   5. Noti Popup state
   6. ClearClipHistoryWhenPasswordManagerAutoclearclipboard state (Doesn't work)
+  7. SyncDiscordMic with SystemMic
