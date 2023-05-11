@@ -7,7 +7,8 @@ SetWorkingDir %A_ScriptDir% ; Ensures a consistent starting directory.
 
 quote = "
 apostrophe = '
-version :="UniHotkey | v.25"
+Percent := "%"
+version :="UniHotkey | v.25.1"
 /*
 Gui 2 Main
 Gui 1 Mic Main
@@ -134,6 +135,7 @@ IniRead, DailySiteCheckIn, UHotkey.ini, Initialization, saveDailySiteCheckIn
 IniRead, DailySiteCheckInBrowser, UHotkey.ini, Initialization, saveDailySiteCheckInBrowser
 IniRead, DetectDiscordMic, UHotkey.ini, Initialization, saveDetectDiscordMic
 IniRead, TimeIdleCheck, UHotkey.ini, Initialization, saveTimeIdleCheck
+IniRead, SyncMic, UHotkey.ini, Initialization, saveSyncMic
 if (saveDark_Mode=="ERROR")
 {
     Dark_Mode = 0
@@ -166,6 +168,10 @@ if (saveTimeIdleCheck=="ERROR")
 {
     TimeIdleCheck = 1
 }
+if (saveSyncMic=="ERROR")
+{
+    SyncMic = 0
+}
 #Include D:\Autohotkey\Gdip_All.ahk
 #Include D:\Autohotkey\Class_ImageButton.ahk
 #Include D:\Autohotkey\UseGDIP.ahk
@@ -175,6 +181,7 @@ CoordMode, ToolTip, Screen
 CoordMode, Pixel, Screen
 SoundSet, 100, MASTER, Mute,%MICID%
 SoundSet, 100, MASTER, Mute,%MICID%
+mic = 1 ;ค่าdefaultเป็นปิด
 
 ;https://www.autohotkey.com/boards/viewtopic.php?t=73197 ต้นฉบับ Border
 ;;https://www.autohotkey.com/boards/viewtopic.php?f=6&p=374876#p374876 Border ที่ใช้
@@ -227,7 +234,6 @@ leftMonitorHeight = 1200
 rightMonitorWidth = 1920
 rightMonitorHeight = 1080
 gui5 = 0 ;ปิดFast Note Gui
-mic = 1 ;ค่าdefaultเป็นปิด
 Time_Click = 0 ;ค่าdefaultเป็นปิด
 P_Med_Work = 1 ;ค่าdefaultเป็นปิด
 enablestopwatch = 0 ;ปิดเป็นค่าdefault
@@ -235,7 +241,6 @@ stopwatchworking = 0 ;ปิดเป็นค่าdefault
 bookmarktab_on = 0 ;ปิดเป็นค่าdefault
 autocollapsebookmarkbar = 1 ;เปิดเป็นค่าdefault
 bookmarktab_onaction = 0;ปิดเป็นค่าdefault
-SyncMic = 0;ปิดเป็นค่าdefault
 EnablePushtotalk = 1 ;เปิดเป็นค่าdefault
 S_HH =0 ;0เป็นค่าdefault
 S_MM =00 ;00เป็นค่าdefault
@@ -243,6 +248,7 @@ S_SS =00 ;00เป็นค่าdefault
 EnableFocusChange = 0 ;0เป็นค่าdefault
 stopbookmarkcheck = 0 ;0เป็นค่าdefault
 WaitForReturnLangBar = 0 ;0เป็นค่าdefault
+ActiveWinTranspa := 255 ;0เป็นค่าdefault ทึบ 100%
 
 ;Button Class_Imagebutton
 IBBtnStyles := [ [0, 0x801E1E1E, , 0xFFFFFFFF, 0, , 0x848484, 1]      ; normal
@@ -275,17 +281,28 @@ Else if (dismic = 0)
 {
     Gui, 4: Color, FF0000
 }
+Else
+    {
+        Gui, 4: Color, FF0000
+        dismic = 0
+    }
 ;-----------------------------------------------------------------------------
 ;--------------------------Auto Run---------------------
 if (A_DD != LastRun)
 {
-    Run, %DailySiteCheckInBrowser%,,UseErrorLevel
+    if (DailySiteCheckInBrowser != "")
+    {
+        Run, %DailySiteCheckInBrowser%,,UseErrorLevel
+    }
     if (ErrorLevel = "ERROR")
     {
         ToolTip, Error to run browser, -30, 1028, 2
     }
     sleep 2000
-    Run, %DailySiteCheckIn%,,UseErrorLevel
+    if (DailySiteCheckIn != "")
+    {
+        Run, %DailySiteCheckIn%,,UseErrorLevel
+    }
     if (ErrorLevel = "ERROR")
     {
         ToolTip, Error to go to daily check-in site, -30, 1028, 2
@@ -317,7 +334,7 @@ Return
 ;-----------------------------------------------------------------------------
 ;UI
 ;--------------------------Create Main GUI---------------------------
-PgUp & PgDn::
+~PgUp & ~PgDn::
     if (guimain = 0)
     {
         CoordMode, Mouse, Screen
@@ -397,10 +414,7 @@ PgUp & PgDn::
         {
             Gui, 2: Add, CheckBox, x220 y115 w350 h17 vTimeIdleCheck gac_idle_checking,Idle checking - AutoMuteMic
         }
-        Gui, 2: Add, Button, x120 y140 w40 h30 gLA1 hWndhBtn1,เรียง LA1
-        if (Dark_Mode = 1)
-            ImageButton.Create(hBtn1, IBBtnStyles*)
-        Gui, 2: Add, Button, x160 y140 w40 h30 gLA2 hWndhBtn1,เรียง LA2
+        Gui, 2: Add, Button, x120 y140 w80 h30 gResetBackground hWndhBtn1, Reset background
         if (Dark_Mode = 1)
             ImageButton.Create(hBtn1, IBBtnStyles*)
 
@@ -522,42 +536,7 @@ PgUp & PgDn::
         if (Dark_Mode = 1)
             CtlColors.Attach(edit1, "1E1E1E", "FFFFFF")
 
-        ;Gui, 2: Add, Groupbox, x3 y250 w250 h50, Aim
-        ;Gui, 2: Add, Text, x10 y267 w150 h15 vP_OutMed, Possibility to be Med : %P_Med%
-        ;Gui, 2: Add, Button, x10 y300 w30 h30 gAc_P_Med, Start
-        ;if (P_Med_Work=1)
-        ;{
-            ;Gui, 2: Add, Checkbox, x160 y262 w80 h23 +checked vP_Med_Work gAc_Med_Work, Work?
-        ;}
-        ;else
-        ;{
-            ;Gui, 2: Add, Checkbox, x160 y262 w80 h23 vP_Med_Work gAc_Med_Work, Work?
-        ;}
-/*
-        Gui, 2: Add, Groupbox, x3 y300 w150 h50, Time to LClick
-        Gui, 2: Add, Text, x7 y317 w20 h15,HH:
-        Gui, 2: Add, Edit, x28 y315 w18 h15 limit2 gAc_TClick_HH vTClick_HH hwndedit1,00
-        if (Dark_Mode = 1)
-            CtlColors.Attach(edit1, "1E1E1E", "FFFFFF")
-
-        Gui, 2: Add, Text, x50 y317 w20 h15,MM:
-        Gui, 2: Add, Edit, x73 y315 w18 h15 limit2 gAc_TClick_MM vTClick_MM hwndedit1,00
-        if (Dark_Mode = 1)
-            CtlColors.Attach(edit1, "1E1E1E", "FFFFFF")
-            
-        if (Vari_TClick = 0)
-        {
-            Gui, 2: Add, Button, x100 y310 w47 h30 gAc_TClick vVari_TClick hWndhBtn1,Working
-            ;if (Dark_Mode = 1)
-            ;ImageButton.Create(hBtn1, IBBtnStyles*)
-        }
-        else
-        {
-            Gui, 2: Add, Button, x100 y310 w47 h30 gAc_TClick vVari_TClick hWndhBtn1,Stopped
-            ;if (Dark_Mode = 1)
-            ;ImageButton.Create(hBtn1, IBBtnStyles*)
-        }
-*/
+        
         if (Dark_Mode =1)
         {
             Gui, 2: Add, Checkbox, x410 y410 w80 h23 +checked gAc_Dark_Mode vDark_Mode, Dark Mode
@@ -576,17 +555,7 @@ PgUp & PgDn::
             Gui, 2: Add, Checkbox, x320 y410 w80 h23 gAc_NotiPopup vNotiPopup, NotiPopup
         }
 
-        ;if (ClearClipHistoryWhenPasswordManagerAutoclearclipboard =1)
-        ;{
-            ;Gui, 2: Add, Checkbox, x120 y410 w180 h23 +checked gAc_ClearClipHistoryWhenPasswordManagerAutoclearclipboard vClearClipHistoryWhenPasswordManagerAutoclearclipboard, ClearClipHistoryWhenPasswordManagerAutoclearclipboard
-        ;}
-        ;else
-        ;{
-            ;Gui, 2: Add, Checkbox, x120 y410 w180 h23 gAc_ClearClipHistoryWhenPasswordManagerAutoclearclipboard vClearClipHistoryWhenPasswordManagerAutoclearclipboard, ClearClipHistoryWhenPasswordManagerAutoclearclipboard
-        ;}
-
         Gui, 2: Show, w500 h440 x%x6% y%y6%, %version%
-        ;gosub, Ac_P_Med
     }
     else
     {
@@ -598,6 +567,7 @@ PgUp & PgDn::
     }
 return
 ;-----------------------------------------------------------------------------
+;Always Loop
 Loop:
 SetTitleMatchMode,2
 if (guimain = 1)
@@ -659,54 +629,7 @@ if (A_TimeIdleKeyboard > 120000 && A_TimeIdleMouse > 120000 && TimeIdleCheck=1)
         }
     }
 }
-/*
-Gui 2:Default
-GuiControlGet, P_Med_Work
-if(P_Med_Work = 1)
-{
-    if WinActive("Genshin Impact") || WinActive("VALORANT") || WinActive("Facebook") || WinActive("Tower of Fantasy")
-    {
-        if (P_Med>0)
-        {
-            P_Med := P_Med - 15
-            if (P_Med<0)
-            {
-                P_Med := 0
-            }
-            GuiControl,2:, P_OutMed,Possibility to be Med : %P_Med%
-        }
-        else
-        {
-            if (NotiPopup = 1)
-            {
-                SplashImage = %A_ScriptDir%\UHotkey Game limit alert.png
-                if FileExist(SplashImage)
-                {
-                    ysplash := rightMonitorHeight -200
-                    SplashImageGUI(SplashImage, "Center", ysplash, 500, False)
-                }
-            }
-            Else{
-            Tooltip, เรียน
-            }
-            sleep 2000
-            Tooltip,
-        }
-    }
-    else if WinActive("Discord")
-    {
-    }
-    else if (P_Med < 7200)
-    {
-        P_Med := P_Med + 5
-        if (P_Med>7200)
-        {
-            P_Med := 1500
-        }
-        GuiControl,2:, P_OutMed,Possibility to be Med : %P_Med%
-    }
-}
-*/
+
 MouseGetPos, MToHideToolX, MToHideToolY
 If ( MToHideToolX>=-152 and MToHideToolX<=0 and MToHideToolY <= 1052 and MToHideToolY >= 1018 )
 {
@@ -814,12 +737,6 @@ Ac_NotiPopup:
 Gui 2:Default
 GuiControlGet, NotiPopup
 return
-/*
-Ac_ClearClipHistoryWhenPasswordManagerAutoclearclipboard:
-Gui 2:Default
-GuiControlGet, ClearClipHistoryWhenPasswordManagerAutoclearclipboard
-return
-*/
 
 Ac_Dark_Mode:
     Gui 2:Default
@@ -898,12 +815,6 @@ Ac_TClick_MM:
     GuiControlGet, TClick_HH
     GuiControlGet, TClick_MM
 return
-/*
-Ac_Med_Work:
-    Gui 2:Default
-    GuiControlGet, P_Med_Work
-Return
-*/
 
 Ac_TClick:
 if (Time_Click = 0)
@@ -942,7 +853,6 @@ else if (Time_Click = 1)
 return
 
 StopWatch:
-    ;msgbox, %enablestopwatch%
     if (enablestopwatch = 0 && stopwatchworking = 0)
     {
         GuiControl,2:, stopwatchbutt,StopWtach is detecting
@@ -978,14 +888,8 @@ AcGUI_HH:
     S_HH := GUI_HH
 return
 
-LA1:
-    WinMove, Learn Anywhere,,623,-51,1296,779,,
-    WinSet, AlwaysOnTop,on,Learn Anywhere
-return
-
-LA2:
-    WinMove, Learn Anywhere,,-1302,-172,1296,779,,
-    WinSet, AlwaysOnTop,on,Learn Anywhere
+ResetBackground:
+    WinMove, ahk_class WorkerW, , -1928, -128
 return
 
 WindowManager:
@@ -1076,8 +980,6 @@ OnClipboardChange:
 if A_EventInfo = 2 ; Clipboard contains something entirely non-text such as a picture.
 {
     ToolTip,Copied non-text,-30, 1028, 2
-    ;Sleep 700
-    ;ToolTip  ; Turn off the tip.
 }
 else if A_EventInfo = 1 ;Clipboard contains something that can be expressed as text (this includes files copied from an Explorer window).
 {
@@ -1151,7 +1053,7 @@ SetTimer, CheckLangAgain,OFF
 return
 
 
-;Shortcut volup down
+;Decrease Vol
 Insert::
 pause_change_audiorelay_vol = 1
 While, GetKeyState("Insert","P")
@@ -1174,6 +1076,7 @@ if pause_change_audiorelay_vol = 0
 }
 return
 
+;Increase vol
 Pause::
 pause_change_audiorelay_vol = 1
 while, GetKeyState("Pause","P")
@@ -1196,7 +1099,7 @@ if pause_change_audiorelay_vol = 0
 }
 return
 
-;Shortcut Mute Unmute Mic 1 Code
+;Mute Unmute System Mic
 *RAlt::
 ClickMic:
     {
@@ -1204,7 +1107,6 @@ ClickMic:
         {
             SoundSet, 100, MASTER, Volume,%MICID%
             SoundSet, 0, MASTER, Mute,%MICID%
-            ;run C:\Program Files (x86)\foobar2000\foobar2000.exe /immediate /play "%A_ScriptDir%\unmute.wav" /hide 
             SoundPlay, %A_ScriptDir%\unmute.wav
             Gui, 1: Color, 1BFF00
             if (mic = dismic && SyncMic=1)
@@ -1236,7 +1138,6 @@ ClickMic:
                             Break
                     }
                     SoundSet, 100, MASTER, Mute,%MICID%
-                    ;run C:\Program Files (x86)\foobar2000\foobar2000.exe /immediate /play "%A_ScriptDir%\mute.wav" /hide 
                     SoundPlay, %A_ScriptDir%\mute.wav
                     Gui, 1: Color, FF0000
                     if (mic = dismic && SyncMic=1)
@@ -1257,7 +1158,6 @@ ClickMic:
         else if (mic = "0") ;ถ้าไมค์เปิดอยู่ให้เปิด
         {
             SoundSet, 100, MASTER, Mute,%MICID%
-            ;run C:\Program Files (x86)\foobar2000\foobar2000.exe /immediate /play "%A_ScriptDir%\mute.wav" /hide 
             SoundPlay, %A_ScriptDir%\mute.wav
             Gui, 1: Color, FF0000
             mic = 1 ;ไมค์ปิดแล้ว
@@ -1282,12 +1182,12 @@ ClickMic:
             send, {RCtrl}
             if (dismic = 0)
             {
-                Gui, 4: Color, 1BFF00
+                Gui, 4: Color, FF0000
                 dismic = 1
             }
             else if (dismic = 1)
             {
-                Gui, 4: Color, FF0000
+                Gui, 4: Color, 1BFF00
                 dismic = 0
             }
         }
@@ -1308,27 +1208,33 @@ return
 return
 
 ;Fast Line capture
-#IfWinExist, LINE ahk_class Qt5152QWindowIcon
-!+W::
-WinGet, LineShow, MinMax, ahk_class Qt5152QWindowIcon
-;ToolTip, %LineShow%
+!+w::
+IfWinExist, LINE ahk_class Qt5152QWindowIcon
+{
+    WinGet, LineShow, MinMax, ahk_class Qt5152QWindowIcon
 
-;ถ้า minimized
-if (LineShow = -1)
-{
-    WinRestore, ahk_exe LINE.exe
-    ;WinMove, ahk_class Qt5152QWindowIcon,, 430, 411
+    ;ถ้า minimized
+    if (LineShow = -1)
+    {
+        WinRestore, ahk_exe LINE.exe
+    }
+    WinActivate, ahk_exe LINE.exe
+    WinGetPos, x, y, width, height, LINE
+    height := height - 151
+    ControlClick, x32 y%height%, ahk_class Qt5152QWindowIcon,,,, NA
+    if (LineShow = -1)
+    {
+        WinMinimize, ahk_class Qt5152QWindowIcon
+    }
 }
-WinActivate, ahk_exe LINE.exe
-WinGetPos, x, y, width, height, LINE
-height := height - 151
-ControlClick, x32 y%height%, ahk_class Qt5152QWindowIcon,,,, NA
-if (LineShow = -1)
+Else
 {
-    WinMinimize, ahk_class Qt5152QWindowIcon
+    ToolTip,Line not exist, -30, 1028, 2
+    SetTimer, CheckLangAgain, 5000
 }
 return
 
+;Fast Note GUI
 !+m::
     CoordMode, Mouse, Screen
     MouseGetPos, x5, y5
@@ -1583,8 +1489,8 @@ FastNoteSubjectedit:
     }
 return
 
+;Open addition menu
 !+s::
-;Tooltip, %EnableFocusChange%
 send, ^c
 MouseGetPos, vCurX2, vCurY2
 if (Dark_Mode = 1)
@@ -1612,7 +1518,6 @@ if (EnableFocusChange = 0)
     Gui, 6: -MinimizeBox -MaximizeBox -SysMenu +AlwaysOnTop -Caption
 }
 EnableFocusChange = 1
-;Tooltip, %EnableFocusChange%
 vCurY2 := vCurY2-50
 Gui, 6: Show, w472 h50 x%vCurX2% y%vCurY2% NA,Addition Menu
 WinSet, Transparent, 255, Addition Menu
@@ -1628,32 +1533,35 @@ if (NotiPopup = 1)
 }
 return
 
+;Minimize active window
 !+e::
-    WinGetClass, class, A
-    WinMinimize, A
+IfWinNotActive, ahk_class WorkerW
+{
+WinGetClass, class, A
+WinMinimize, A
+}
 return
 
+;Move active window along with cursor
 !+q::
-    ;IfWinNotActive, ahk_class WorkerW
-    ;{
-    CoordMode, Mouse, Screen
-    MouseGetPos,vX1, vY1
-    activeWindow := WinActive("A")
-    WinGetPos, x, y, width, height, ahk_id %activeWindow%
-    loop
+CoordMode, Mouse, Screen
+MouseGetPos,vX1, vY1
+activeWindow := WinActive("A")
+WinGetPos, x, y, width, height, ahk_id %activeWindow%
+loop
+{
+    MouseGetPos,vX2, vY2
+    newX := 1.5*(vX2-vX1)+x
+    newY := 1.5*(vY2-vY1)+y
+    WinMove, ahk_id %activeWindow%, , %newX%, %newY%, Width, Height
+    If !GetKeyState("q","P")
     {
-        MouseGetPos,vX2, vY2
-        newX := 1.5*(vX2-vX1)+x
-        newY := 1.5*(vY2-vY1)+y
-        WinMove, ahk_id %activeWindow%, , %newX%, %newY%, Width, Height
-        If !GetKeyState("q","P")
-        {
-            Break
-        }
+        Break
     }
-    ;}
+}
 return
 
+;Move active window down
 !+down::
     IfWinNotActive, ahk_class WorkerW
     {
@@ -1682,6 +1590,7 @@ return
     }
 return
 
+;Move active window left
 !+left::
     IfWinNotActive, ahk_class WorkerW
     {
@@ -1710,6 +1619,7 @@ return
     }
 return
 
+;Move active window up
 !+up::
     IfWinNotActive, ahk_class WorkerW
     {
@@ -1738,6 +1648,7 @@ return
     }
 return
 
+;Move active window right
 !+right::
     IfWinNotActive, ahk_class WorkerW
     {
@@ -1766,473 +1677,50 @@ return
     }
 return
 
+;Always On top toggle
 !+a::
-WinGetActiveTitle, Title
-WinGet, ExStyle, ExStyle, % Title
-WinGet, id, ID, A
-If (ExStyle & 0x8) { ; 0x8 stands for WS_EX_TOPMOST.
-	WinSet, AlwaysOnTop, Off, % Title
-	WinSet, Transparent, 255, % Title
-    IsOntop = 0
-    SetBackgroudColor(id)
-}
-Else {
-	WinSet, AlwaysOnTop, On , % Title
-	WinSet, Transparent, 245, % Title
-    IsOntop = 1
-    SetBackgroudColor(id)
-}
+Winset, Alwaysontop, , A
 return
 
-;https://www.autohotkey.com/boards/viewtopic.php?t=73197 ต้นฉบับ Border
-;;https://www.autohotkey.com/boards/viewtopic.php?f=6&p=374876#p374876 Border ที่ใช้
-
-SetBackgroudColor(CurrHwnd)
+;Increase window's opacity
+!+<::
+ActiveWinTranspa := ActiveWinTranspa +10
+if (ActiveWinTranspa > 255)
 {
-	global Colors, GuiArray
-
-	WinGetTitle, CurrTitle, ahk_id %CurrHwnd%
-	GuiName := "GUI" CurrHwnd+0
-    
-	if (GuiArray.HasKey(GuiName))
-	{
-		GuiArray[GuiName] := ""
-		GuiArray.Delete(GuiName)
-		Gui, %GuiName%:Destroy
-		Return
-	}
-    
-    if (IsOntop = 0)
-    {
-        return
-    }
-	Gui, %GuiName%:New, +hwndGuihwnd	
-	Gui, %GuiName%:+ToolWindow +E0x20 ; click through
-	Gui, %GuiName%:Color, % Colors[1]
-	Colors.Push(Colors[1])
-	Colors.RemoveAt(1)
-
-	WinSet, Transparent, 0, % "ahk_id " Guihwnd
-	Gui, %GuiName%:Show, xCenter yCenter, %CurrTitle%, class DockGui
-	WinSet, Style, -0xC00000, % "ahk_id " Guihwnd
-
-	exDock := new Dock(CurrHwnd,Guihwnd)
-	exDock.Position("Title")
-	exDock.CloseCallback := Func("CloseCallback").Bind(GuiName)
-	GuiArray[GuiName] := exDock
-	
-	WinActivate, % "ahk_id " . CurrHwnd
-	WinSet, Transparent, 255, % "ahk_id " . Guihwnd
-	
-	Return
+    ActiveWinTranspa := 255
+    WinSet, Transparent, OFF, A
+    ActiveWinTranspaShow := ActiveWinTranspa/255*100
+    ActiveWinTranspaShow := % Format("{:.0f}",ActiveWinTranspaShow)
+    ToolTip, Active window's opacity : %ActiveWinTranspaShow%%Percent%, -30, 1028, 2
+    SetTimer, CheckLangAgain, 5000
+    return
 }
-
-CloseCallback(GuiName)
+Else if (ActiveWinTranspa == "")
 {
-	Gui, %GuiName%:Destroy
+    ActiveWinTranspa := 0
 }
+WinSet, Transparent, %ActiveWinTranspa%, A
+ActiveWinTranspaShow := ActiveWinTranspa/255*100
+ActiveWinTranspaShow := % Format("{:.0f}",ActiveWinTranspaShow)
+ToolTip, Active window's opacity : %ActiveWinTranspaShow%%Percent%, -30, 1028, 2
+SetTimer, CheckLangAgain, 5000
+return
 
-/*
-	Class Dock
-		Attach a window to another
-
-	Author
-		Marco Gavelli
-
-	Original Author
-		Soft (visionary1 ???)
-	
-	version
-		0.1 (2017.04.20)
-		0.2 (2017.05.06)
-		0.2.1 (2017.05.07)
-		0.2.1.1 bug fixed (2017.05.09)
-		0.2.2 testing multiple docks... (2017.05.09)
-
-	License
-		WTFPL (http wtfpl.net /)  Broken Link for safety
-
-	Dev env
-		Windows 10 pro x64
-		AutoHotKey H v1.1.25.01 32bit
-
-	To Do...
-		Multiple Dock, group windows...
-
-	thanks to
-		Helgef for overall coding advices
-*/
-class Dock
+;Decrease window's opacity
+!+>::
+ActiveWinTranspa := ActiveWinTranspa -10
+if (ActiveWinTranspa < 40)
 {
-	static EVENT_OBJECT_LOCATIONCHANGE := 0x800B
-	, EVENT_OBJECT_FOCUS := 0x8005, EVENT_OBJECT_DESTROY := 0x8001
-	, EVENT_MIN := 0x00000001, EVENT_MAX := 0x7FFFFFFF ;for debug
-	, EVENT_SYSTEM_MINIMIZESTART := 0x0016
-	, EVENT_SYSTEM_MINIMIZEEND := 0x0017
-	, EVENT_SYSTEM_FOREGROUND := 0x0003
-	, EVENT_OBJECT_HIDE := 0x8003
-	, EVENT_OBJECT_SHOW := 0x8002
-
-	/*
-		Instance := new Dock(Host hwnd, Client hwnd, [Callback], [CloseCallback])
-
-			Host hwnd
-				hwnd of a Host window
-
-			Client hwnd
-				hwnd of a window that follows Host window (window that'll be attached to a Host window)
-
-			[Callback]
-				a func object, or a bound func object
-				if omitted, default EventsHandler will be used, which is hard-coded in 'Dock.EventsHandler'
-				To construct your own events handler, I advise you to see Dock.EventsHandler first
-
-			[CloseCallback]
-				a func object, or a bound func object
-				called when Host window is destroyed, see 'Dock Example.ahk' for practical usuage
-	*/
-	__New(Host, Client, Callback := "", CloseCallback := "")
-	{
-		this.hwnd := []
-		this.hwnd.Host := Host
-		this.hwnd.Client := Client
-		; WinSet, ExStyle, +0x80, % "ahk_id " this.hwnd.Client
-
-		this.Bound := []
-
-		this.Callback := IsObject(Callback) ? Callback : ObjBindMethod(Dock.EventsHandler, "Calls")
-		this.CloseCallback := IsFunc(CloseCallback) || IsObject(CloseCallback) ? CloseCallback
-
-		/*
-			lpfnWinEventProc
-		*/
-		this.hookProcAdr := RegisterCallback("_DockHookProcAdr",,, &this)
-
-		/*
-			idProcess
-		*/
-		WinGet, idProcess, PID, % "ahk_id " . this.hwnd.Host
-		;idProcess := 0
-
-		/*
-			idThread
-		*/
-		idThread := DllCall("GetWindowThreadProcessId", "Ptr", this.hwnd.Host, "Int", 0)
-		;idThread := 0
-
-		; DllCall("CoInitialize", "Int", 0)
-
-		this.Hook := DllCall("SetWinEventHook"
-				, "UInt", Dock.EVENT_SYSTEM_FOREGROUND 		;eventMin
-				, "UInt", Dock.EVENT_OBJECT_LOCATIONCHANGE 	;eventMax
-				, "Ptr", 0				  	;hmodWinEventProc
-				, "Ptr", this.hookProcAdr 			;lpfnWinEventProc
-				, "UInt", idProcess			 	;idProcess
-				, "UInt", idThread			  	;idThread
-				, "UInt", 0)					;dwFlags
-				
-		this.enable := 1
-	}
-
-	/*
-		Instance.Unhook()
-			unhooks Dock and frees memory
-	*/
-	Unhook()
-	{
-		DllCall("UnhookWinEvent", "Ptr", this.Hook)		
-		; DllCall("CoUninitialize")
-		DllCall("GlobalFree", "Ptr", this.hookProcAdr)
-		this.Hook := ""
-		this.hookProcAdr := ""
-		this.Callback := ""
-		; WinSet, ExStyle, -0x80, % "ahk_id " this.hwnd.Client		
-	}
-
-	__Delete()
-	{
-		this.Delete("Bound")
-
-		If (this.Hook)
-			this.Unhook()
-
-		this.CloseCallback := ""
-	}
-
-	/*
-		provisional
-	*/
-	Add(hwnd, pos := "")
-	{
-		static last_hwnd := 0
-
-		this.Bound.Push( new this( !NumGet(&this.Bound, 4*A_PtrSize) ? this.hwnd.Client : last_hwnd, hwnd ) )
-
-		If pos Contains Top,Bottom,R,Right,L,Left
-			this.Bound[NumGet(&this.Bound, 4*A_PtrSize)].Position(pos)
-
-		last_hwnd := hwnd
-	}
-
-	/*
-		Instance.Position(pos)
-			pos - sets position to dock client window
-				Top - sets to Top side of the host window
-				Bottom - sets to bottom side of the host window
-				R or Right - right side
-				L or Left -  left side
-	*/
-	Position(pos)
-	{
-		this.pos := pos
-		Return this.EventsHandler.EVENT_OBJECT_LOCATIONCHANGE(this, "host")
-	}
-
-	/*
-		Default EventsHandler
-	*/
-	class EventsHandler extends Dock.HelperFunc
-	{
-		Calls(self, hWinEventHook, event, hwnd)
-		{
-			Critical
-
-			If (hwnd = self.hwnd.Host)
-			{
-				Return this.Host(self, event)
-			}
-
-			If (hwnd = self.hwnd.Client)
-			{
-				Return this.Client(self, event)
-			}
-		}
-
-		Host(self, event)
-		{
-			If (event = Dock.EVENT_OBJECT_HIDE)
-			{
-				WinHide, % "ahk_id " self.hwnd.Client
-			}
-			
-			If (event = Dock.EVENT_OBJECT_SHOW)
-			{
-				WinShow, % "ahk_id " self.hwnd.Client
-			}
-			
-			If (event = Dock.EVENT_SYSTEM_MINIMIZESTART)
-			{
-				self.enable := 0
-			}
-			
-			If (event = Dock.EVENT_SYSTEM_MINIMIZEEND)
-			{				
-				Sleep, 500 ; Wait animation
-				WinSet, Transparent, 0, % "ahk_id " self.hwnd.Client
-				this.EVENT_OBJECT_LOCATIONCHANGE(self, "host")				
-				this.EVENT_SYSTEM_FOREGROUND(self.hwnd.Client)
-				;this.EVENT_SYSTEM_FOREGROUND(self.hwnd.Host)
-				WinSet, Transparent, 255, % "ahk_id " self.hwnd.Client
-				self.enable := 1
-			}
-			
-			If (event = Dock.EVENT_SYSTEM_FOREGROUND AND self.enable)
-			{				
-				WinSet, Transparent, 0, % "ahk_id " self.hwnd.Client
-				this.EVENT_SYSTEM_FOREGROUND(self.hwnd.Client)
-				;this.EVENT_SYSTEM_FOREGROUND(self.hwnd.Host)
-				;this.EVENT_SYSTEM_FOREGROUND(self.hwnd.Host) ; why??
-				WinSet, Transparent, 255, % "ahk_id " self.hwnd.Client				
-				Return ""
-			}
-			
-			If (event = Dock.EVENT_OBJECT_LOCATIONCHANGE AND self.enable)
-			{
-				Return this.EVENT_OBJECT_LOCATIONCHANGE(self, "host")
-			}
-
-			If (event = Dock.EVENT_OBJECT_DESTROY)
-			{
-				self.Unhook()
-
-				If (IsFunc(self.CloseCallback) || IsObject(self.CloseCallback))
-					Return self.CloseCallback()
-			}
-		}
-
-		Client(self, event)
-		{
-			If (event = Dock.EVENT_SYSTEM_FOREGROUND)
-			{
-			}
-
-			If (event = Dock.EVENT_OBJECT_LOCATIONCHANGE)
-			{
-			}
-		}
-
-		/*
-			Called when host window got focus
-			without this, client window can't be showed (can't set to top)
-		*/
-		EVENT_SYSTEM_FOREGROUND(hwnd)
-		{
-			Return this.WinSetTop(hwnd)
-		}
-
-		/*
-			Called when host window is moved
-		*/
-		EVENT_OBJECT_LOCATIONCHANGE(self, via)
-		{
-			Host := this.WinGetPos(self.hwnd.Host)
-			Client := this.WinGetPos(self.hwnd.Client)
-
-			If InStr(self.pos, "Title")
-			{
-				; SysGet, BorderWidth, 5
-				
-				If (via = "host")
-				{
-					Return this.MoveWindow(self.hwnd.Client 	;hwnd
-								, Host.x-2 ;+6			;x
-								, Host.y-3 ;-2     		;y
-								, Host.w+5 ;-10	  		;width
-								, 41) ;Host.h-2) 	 	;height
-				}
-
-				If (via = "client")
-				{
-				}
-			}
-			
-			If InStr(self.pos, "Top")
-			{
-				If (via = "host")
-				{
-					Return this.MoveWindow(self.hwnd.Client 	;hwnd
-								, Host.x		;x
-								, Host.y - Client.h 	;y
-								, Client.w	  	;width
-								, Client.h) 		;height
-				}
-
-				If (via = "client")
-				{
-					Return this.MoveWindow(self.hwnd.Host	   	;hwnd
-								, Client.x	  	;x
-								, Client.y + Client.h   ;y
-								, Host.w		;width
-								, Host.h)	   	;height
-				}
-			}
-
-			If InStr(self.pos, "Bottom")
-			{
-				If (via = "host")
-				{		   
-					Return this.MoveWindow(self.hwnd.Client	 	;hwnd
-								, Host.x		;x
-								, Host.y + Host.h   	;y
-								, Client.w	  	;width
-								, Client.h)	 	;height
-				}
-
-				If (via = "client")
-				{
-					Return this.MoveWindow(self.hwnd.Host	   	;hwnd
-								, Client.x	  	;x
-								, Client.y - Host.h 	;y
-								, Host.w		;width
-								, Host.h)	   	;height
-				}
-			}
-
-			If InStr(self.pos, "R")
-			{
-				If (via = "host")
-				{
-					Return this.MoveWindow(self.hwnd.Client	 	;hwnd
-								, Host.x + Host.w   	;x
-								, Host.y		;y
-								, Client.w	  	;width
-								, Client.h)	 	;height	
-				}
-
-				If (via = "client")
-				{
-					Return this.MoveWindow(self.hwnd.Host	   	;hwnd
-								, Client.x - Host.w 	;x
-								, Client.y	  	;y
-								, Host.w		;width
-								, Host.h)	   	;height
-				}
-			}
-
-			If InStr(self.pos, "L")
-			{
-				If (via = "host")
-				{
-					Return this.MoveWindow(self.hwnd.Client	 	;hwnd
-								, Host.x - Client.w 	;x
-								, Host.y		;y
-								, Client.w	  	;width
-								, Client.h)	 	;height	
-				}
-
-				If (via = "client")
-				{
-					Return this.MoveWindow(self.hwnd.Host	   	;hwnd
-								, Client.x + Client.w   ;x
-								, Client.y	  	;y
-								, Host.w		;width
-								, Host.h)	   	;height	
-				}
-			}
-		}
-	}
-
-	class HelperFunc
-	{
-		WinGetPos(hwnd)
-		{
-			WinGetPos, hX, hY, hW, hH, % "ahk_id " . hwnd
-			Return {x: hX, y: hY, w: hW, h: hH}
-		}
-
-		WinSetTop(hwnd)
-		{
-			WinSet, AlwaysOnTop, On, % "ahk_id " . hwnd
-			WinSet, AlwaysOnTop, Off, % "ahk_id " . hwnd
-		}
-
-		MoveWindow(hwnd, x, y, w, h)
-		{			
-			DllCall("MoveWindow", "Ptr", hwnd, "Int", x, "Int", y, "Int", w, "Int", h, "Int", 1)
-			tmp := 0 "-" 0 " W" w " H" h " R0-0"
-			WinSet, Region, %tmp%, % "ahk_id " hwnd
-			Return ""
-		}
-
-		Run(Target)
-		{
-			Try Run, % Target,,, OutputVarPID
-			Catch, 
-				Throw, "Couldn't run " Target
-
-			WinWait, % "ahk_pid " OutputVarPID
-
-			Return WinExist("ahk_pid " OutputVarPID)
-		}
-	}
+    ActiveWinTranspa := 40
 }
+WinSet, Transparent, %ActiveWinTranspa%, A
+ActiveWinTranspaShow := ActiveWinTranspa/255*100
+ActiveWinTranspaShow := % Format("{:.0f}",ActiveWinTranspaShow)
+ToolTip, Active window's opacity : %ActiveWinTranspaShow%%Percent%, -30, 1028, 2
+SetTimer, CheckLangAgain, 5000
+return
 
-_DockHookProcAdr(hWinEventHook, event, hwnd, idObject, idChild, dwEventThread, dwmsEventTime)
-{
-	this := Object(A_EventInfo)
-	this.Callback.Call(this, hWinEventHook, event, hwnd)
-}
-
+;Move window to another monitor
 !+r::
     IfWinNotActive, ahk_class WorkerW
     {
@@ -2363,7 +1851,7 @@ _DockHookProcAdr(hWinEventHook, event, hwnd, idObject, idChild, dwEventThread, d
     }
 return
 
-;Discord Mic------------------------------------------
+;Discord Mic
 ~*RCtrl up::
     if (dismic = 0)
     {
@@ -2375,10 +1863,14 @@ return
         Gui, 4: Color, FF0000
         dismic = 0
     }
+    Else
+    {
+        dismic = 0
+    }
     SetTimer, MicIndicatorOnTop, 1000
 return
 
-;Auto Check Language------------------------------------------
+;Left click action
 ~LButton::
 if (enablestopwatch = 1)
 {
@@ -2863,15 +2355,6 @@ GGTranslate:
     Gui, 6: Destroy
 Return
 
-/*Not Working
-#if (WaitDisableRight = 1)
-RButton Up::
-;msgbox,1
-WaitDisableRight = 0
-return
-            */
-
-
 #IfWinActive ahk_exe GenshinImpact.exe
 ~H::
 	send {MButton down}
@@ -2881,23 +2364,6 @@ return
 	send {MButton up}
 Return
 
-/* อาจเป็นสาเหตุการโดน แบนได้
-#IfWinActive ahk_exe VALORANT-Win64-Shipping.exe
-~4::
-keywait, 4, t.500
-	if (errorlevel = "1")
-	{
-		;send {Lctrl down}{Lshift down}
-		;sleep 10
-		;send {Lctrl up}{Lshift up}
-		if (turn = 1)
-		{
-			ToolTip , Change your language, -30, 1028, 2
-		}
-		ToolTip, ,,,1
-	}
-return
-*/
 #If EnableFocusChange = 1
 1::
 	goto, ForgotEntoTh
@@ -2965,41 +2431,6 @@ GetKeyboardLanguage(_hWnd=0) ;Function check language
 
 return KBLayout & 0xFFFF
 }
-
-/*
-waittoclicklogin:
-sleep 5000
-WinActivate, Genshin Impact Daily Check-In - Google Chrome
-activeWindow := WinActive("A")
-WinGetTitle, titleactive ,A
-WinGetPos, x, y, width, height, ahk_id %activeWindow%
-If(titleactive =  "Genshin Impact Daily Check-In - Google Chrome")
-{
-	newx := x+150
-	newy := y+200
-	CoordMode, Mouse, Screen
-	MouseMove, newx, newy, 0
-	Loop, 5
-	{
-		Send {WheelDown}
-		sleep 1000
-		CoordMode, Pixel, Client
-		ImageSearch, FoundX, FoundY, 0, 0, 1920, 1080, %A_ScriptDir%\hoyologin.png
-		If ErrorLevel = 0
-		{
-			Click, %FoundX%, %FoundY% Left, 1
-			Tooltip, Found
-		}
-		else If ErrorLevel = 1
-		{
-		}
-		Sleep, 500
-	}
-	Until ErrorLevel = 0
-}
-CoordMode, Pixel, Screen
-return
-        */
 
 ForgotEntoTh:
 StringCaseSense, On
@@ -3070,7 +2501,6 @@ StringReplace, clipboardRe1, clipboardRe1,),๗,all
 StringReplace, clipboardRe1, clipboardRe1,(,๖,all
 StringReplace, clipboardRe1, clipboardRe1,*,๕,all
 StringReplace, clipboardRe1, clipboardRe1,&,฿,all
-Percent := "%"
 StringReplace, clipboardRe1, clipboardRe1,%Percent%,๔,all
 StringReplace, clipboardRe1, clipboardRe1,$,๓,all
 StringReplace, clipboardRe1, clipboardRe1,#,๒,all
