@@ -20,7 +20,7 @@ apostrophe = '
 Percent := "%"
 
 ;# Version
-version :="UniHotkey | v.26.1 by ChaiyavutC"
+version :="UniHotkey | v.26.2 by ChaiyavutC"
 
 ;# Library
 #Include D:\Autohotkey\#Library\Gdip_All.ahk
@@ -562,6 +562,8 @@ PgUp & PgDn::
             GuiControl,2: Disable,IndicatorX
             GuiControl,2: Disable,IndicatorY
         }
+
+        Gui, 2: Add, Link, x10 y360 w110 h17 r1 -wrap, <a href="https://github.com/ChaiyavutC/UniHotkey-AHK-edition">GitHub repository link</a>
 
         Gui, 2: Show, w500 h440 x%x6% y%y6%, %version%
     }
@@ -2616,35 +2618,35 @@ Return
 
 
 #If WinActive(version)
-Numpad1::
+Numpad1 up::
 	goto, TurnMonitorOff
 
 #If WinActive(version)
-Numpad2::
+Numpad2 up::
 	goto, Ac_TooltipNoti
 
 #If WinActive(version)
-Numpad3::
+Numpad3 up::
 	;goto, FindIDmic
 
 #If WinActive(version)
-Numpad4::
+Numpad4 up::
 	goto, TranslateShow
 
 #If WinActive(version)
-Numpad5::
+Numpad5 up::
 	goto, ForgotEntoTh
 
 #If WinActive(version)
-Numpad6::
+Numpad6 up::
 	goto, ForgotThtoEn
 
 #If WinActive(version)
-Numpad7::
+Numpad7 up::
 	goto, WindowManager
 
 #If WinActive(version)
-Numpad8::
+Numpad8 up::
 	goto, Spy
 
 ;# Function check language
