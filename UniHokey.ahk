@@ -20,7 +20,7 @@ apostrophe = '
 Percent := "%"
 
 ;# Version
-version :="UniHotkey | v.26"
+version :="UniHotkey | v.26.1 by ChaiyavutC"
 
 ;# Library
 #Include D:\Autohotkey\#Library\Gdip_All.ahk
@@ -173,20 +173,19 @@ IniRead, mainmonitoris, UHotkey.ini, Initialization, mainmonitoris
 
 ;# Mute mic by MICName
 mic_state := VA_GetMasterMute(MICName)
-if(mic_state = 0) && (MICName!="")
+if(MICName!="")
 {
-    VA_SetMasterMute(!VA_GetMasterMute(MICName), MICName)
-    mic = 0
+    VA_SetMasterMute(1, MICName)
+    mic_state = 1
 }
 Else
 {
-    mic = 1
+    mic_state = 0
 }
 
 ;# Create Mic indicator GUI
 Gui, 1: -SysMenu +AlwaysOnTop -Caption +Owner +E0x08000000
-Gui, 1: Color, FF0000
-if (mic = 1)
+if (mic_state = 0)
 {
     Gui, 1: Color, 1BFF00
 }
@@ -403,7 +402,7 @@ PgUp & PgDn::
         if (Dark_Mode = 1)
             ImageButton.Create(hBtn1, IBBtnStyles*)
 
-        if (mic = 1 )
+        if (mic_state = 0)
         {
             GuiControl,2:, ClickMic, Toggle Mode (Mic is ON)
             GuiControl,2: Disable,MICNameSelectDDL
@@ -422,7 +421,7 @@ PgUp & PgDn::
         Gui, 2: Add, DropDownList, x230 y112 w230 h100 vMICNameSelectDDL gAc_MICName_Change,%MicName_list%
         GuiControl,2: ChooseString, MICNameSelectDDL, %MICName%
 
-        if (mic = 0)
+        if (mic_state = 1)
             GuiControl,2: Disable, MICNameSelectDDL
 
         if (EnablePushtotalk=1)
@@ -582,6 +581,10 @@ return
 ;Always Loop
 Loop:
 
+;# Check mic's state
+if (MICName != "")
+    mic_state := VA_GetMasterMute(MICName)
+
 if (guimainhide = 0)
 {
     Sec_TimeIdleMou := A_TimeIdleMouse/1000
@@ -614,7 +617,7 @@ if (A_TimeIdleKeyboard > 120000 && A_TimeIdleMouse > 120000 && TimeIdleCheck=1)
         if (count <= 0)
         {
             ToolTip,Idle mode - Mic was muted, %TooltipX%, %TooltipY%, 2
-            if (mic = 0)
+            if (mic_state = 0)
             {
                 if (MICName="")
                 {
@@ -622,9 +625,8 @@ if (A_TimeIdleKeyboard > 120000 && A_TimeIdleMouse > 120000 && TimeIdleCheck=1)
                     return
                 }
                 ;# Mute mic by MICName
-                mic_state := VA_GetMasterMute(MICName)
-                if(mic_state = 0) && (MICName="")
-                    VA_SetMasterMute(!VA_GetMasterMute(MICName), MICName)
+                if(MICName!="")
+                    VA_SetMasterMute(1, MICName)
 
                 if (guimainhide = 0)
                     {
@@ -638,7 +640,7 @@ if (A_TimeIdleKeyboard > 120000 && A_TimeIdleMouse > 120000 && TimeIdleCheck=1)
                 Gui, 1: Color, FF0000
                 ;SoundPlay, %A_ScriptDir%\mute.wav
                 ;run C:\Program Files (x86)\foobar2000\foobar2000.exe /immediate /play "%A_ScriptDir%\mute.wav" /hide 
-                mic = 1
+                mic_state = 1
                 break
             }
             loop 
@@ -797,12 +799,13 @@ Gosub, Save
 return
 
 TerminateProgram:
-    ;# UnMute mic by MICName
-    mic_state := VA_GetMasterMute(MICName)
-    if(mic_state = 0) && (MICName!="")
-        VA_SetMasterMute(!VA_GetMasterMute(MICName), MICName)
-
-    gosub, Save
+;# Mute mic by MICName
+if(MICName!="")
+{
+    VA_SetMasterMute(0, MICName)
+    mic_state = 0
+}
+gosub, Save
 exitapp
 return
 
@@ -933,7 +936,7 @@ AcEnableToggleMic:
             GuiControl,2: Enable,IndicatorY
             }
             Gui, 1: Show, x%IndicatorX% y%IndicatorY% w8 h4, WindowMute NoActivate
-            if (mic=1)
+            if (mic_state=0)
                 GuiControl,2: Enable,MICNameSelectDDL
             
         }
@@ -1070,21 +1073,21 @@ WindowManager:
     if FileExist("%A_ScriptDir%\List open windows to quickly select v.2.3.ahk")
         Run, %A_ScriptDir%\List open windows to quickly select v.2.3.ahk
     Else
-        Msgbox, Sorry, File is not exist.
+        Msgbox, Sorry, File name "List open windows to quickly select v.2.3.ahk" is not exist.
 return
 
 TranslateShow:
     if FileExist("%A_ScriptDir%\Auto Google translate v.4.exe")
         Run, %A_ScriptDir%\Auto Google translate v.4.exe
     Else
-        Msgbox, Sorry, File is not exist.
+        Msgbox, Sorry, File name "Auto Google translate v.4.exe" is not exist.
 return
 
 Spy:
     if FileExist("%A_ScriptDir%\Spy v.1.1.ahk")
         Run, %A_ScriptDir%\Spy v.1.1.ahk
     Else
-        Msgbox, Sorry, File is not exist.
+        Msgbox, Sorry, File name "Spy v.1.1.ahk" is not exist.
 return
 
 TurnMonitorOff:
@@ -1092,14 +1095,14 @@ count := 5000
 sleep 300
     loop {
         if (A_TimeIdleKeyboard > 5000 && A_TimeIdleMouse > 5000)
-            {
-                Break
-            }
-        else if (A_TimeIdleKeyboard < 100 || A_TimeIdleMouse < 100)
-            {
-                SplashTextOff
-                return
-            }
+        {
+            Break
+        }
+        else if (A_TimeIdleKeyboard < 260 || A_TimeIdleMouse < 260)
+        {
+            SplashTextOff
+            return
+        }
         
         if (A_TimeIdleKeyboard > A_TimeIdleMouse)
         {
@@ -1111,7 +1114,7 @@ sleep 300
         }
         countshow := countshow/1000
         countshow := % Format("{:.2f}",countshow)
-        SplashTextOn,200,40, Screens will turn off in %countshow% s., Move mouse to cancel
+        SplashTextOn,200,40, Screens will turn off in %countshow% s., Move mouse and press any key to cancel
         sleep 230
     }
 
@@ -1123,12 +1126,11 @@ sleep 300
     SendMessage, 0x112, 0xF170, 2,, Program Manager
 
     ; Check if Mic is ON change it to OFF
-    if (mic = 1)
+    if (mic_state = 0) && (MICName!="")
     {
         ;# Mute mic by MICName
-        mic_state := VA_GetMasterMute(MICName)
-        if(!mic_state = 0) && (MICName="")
-            VA_SetMasterMute(!VA_GetMasterMute(MICName), MICName)
+        VA_SetMasterMute(1, MICName)
+        mic_state = 1
 
         Gui, 1: Color, FF0000
     }
@@ -1277,25 +1279,17 @@ return
 ClickMic:
 if (EnableToggleMic = 1)
 {
+    if (mic_state = 1) ;ถ้าไมค์ปิดอยู่ให้เปิด
     {
-        if (mic = "1") ;ถ้าไมค์ปิดอยู่ให้เปิด
-        {
-            ;if (disableRALTkeyblind = 1)
-                ;return
-            SetTimer, UnmuteMic, 1
-        }
-        else if (mic = "0") ;ถ้าไมค์เปิดอยู่ให้เปิด
-        {
-            ;if (disableRALTkeyblind = 1)
-                ;return
-            SetTimer, muteMic, 1
-
-            ;Make sure Microphone was muted
-            SetTimer, MakesureMicrophonewasmuted, 1
-            
-        }
+        SetTimer, UnmuteMic, 1
+        SetTimer, MakesureMicrophonewasmuted, OFF
     }
-        SetTimer, MicIndicatorOnTop, 1
+    else if (mic_state = 0) ;ถ้าไมค์เปิดอยู่ให้เปิด
+    {
+        SetTimer, muteMic, 1
+        ;Make sure Microphone was muted
+        SetTimer, MakesureMicrophonewasmuted, 5001
+    }
 }
 return
 
@@ -1307,19 +1301,18 @@ UnmuteMic:
         return
     }
     ;# Unute mic by MICName
-    mic_state := VA_GetMasterMute(MICName)
-    if(!mic_state = 0)
-        VA_SetMasterMute(!VA_GetMasterMute(MICName), MICName)
+    VA_SetMasterMute(0, MICName)
+    mic_state = 0 ;ไมค์เปิดแล้ว
 
-    ;SoundPlay, %A_ScriptDir%\unmute.wav
+    SoundPlay, %A_ScriptDir%\unmute.wav
     Gui, 1: Color, 1BFF00
-    if (mic != dismic && SyncMic=1)
+    if (mic_state = dismic && SyncMic=1)
     {
         send, {RCtrl}
         Gui, 4: Color, 1BFF00
         dismic = 1
     }
-    mic = 0 ;ไมค์เปิดแล้ว
+    
     if (guimainhide = 0)
     {
         GuiControl,2:, ClickMic, Toggle Mode (Mic is ON)
@@ -1334,7 +1327,7 @@ UnmuteMic:
             {
                 GuiControl,2:, ClickMic, PushToTalk Mode (Mic is ON)
             }
-            mic = 2
+            mic_state = 2
             if (SyncMic=1)
                 dismic = 1
             loop
@@ -1343,11 +1336,9 @@ UnmuteMic:
                 If !GetKeyState("RAlt","P")
                     Break
             }
-            mic_state := VA_GetMasterMute(MICName)
-            if(mic_state = 0) && (MICName="")
-                VA_SetMasterMute(!VA_GetMasterMute(MICName), MICName)
+                VA_SetMasterMute(1, MICName)
             
-            ;SoundPlay, %A_ScriptDir%\mute.wav
+            SoundPlay, %A_ScriptDir%\mute.wav
             Gui, 1: Color, FF0000
             if (dismic = 1 && SyncMic=1)
             {
@@ -1360,7 +1351,7 @@ UnmuteMic:
                 GuiControl,2:, ClickMic, Toggle Mode (Mic is OFF)
                 GuiControl,2: Disable,MICNameSelectDDL
             }
-            mic = 1
+            mic_state = 1
         }
     }
     SetTimer, UnmuteMic, OFF
@@ -1374,19 +1365,18 @@ muteMic:
         return
     }
     ;# Mute mic by MICName
-    mic_state := VA_GetMasterMute(MICName)
-    if(mic_state = 0)
-        VA_SetMasterMute(!VA_GetMasterMute(MICName), MICName)
-
-    ;SoundPlay, %A_ScriptDir%\mute.wav
+    VA_SetMasterMute(1, MICName)
+    mic_state = 1 ;ไมค์ปิดแล้ว
+    
+    SoundPlay, %A_ScriptDir%\mute.wav
     Gui, 1: Color, FF0000
-    if (mic != dismic && SyncMic=1)
+    if (mic_state = dismic && SyncMic=1)
     {
         send, {RCtrl}
         Gui, 4: Color, FF0000
         dismic = 0
     }
-    mic = 1 ;ไมค์ปิดแล้ว
+    
     if (guimainhide = 0)
     {
         GuiControl,2:, ClickMic, Toggle Mode (Mic is OFF)
@@ -1396,21 +1386,27 @@ muteMic:
 return
 
 MicIndicatorOnTop:
-Gui, 1:+AlwaysOnTop
-Gui, 4:+AlwaysOnTop
-IndicatorY2 := IndicatorY-4
-WinMove, DiscordMute, , %IndicatorX%,%IndicatorY2%
-WinMove, WindowMute, , %IndicatorX%,%IndicatorY%
+if (EnableToggleMic=1)
+{
+    Gui, 1:+AlwaysOnTop
+    WinMove, WindowMute, , %IndicatorX%,%IndicatorY%
+}
+if (EnableDiscordMic=1)
+{
+    Gui, 4:+AlwaysOnTop
+    IndicatorY2 := IndicatorY-4
+    WinMove, DiscordMute, , %IndicatorX%,%IndicatorY2%
+}
 SetTimer, MicIndicatorOnTop, OFF
 return
 
 MakesureMicrophonewasmuted:
-if (MICName = "")
-    return
-mic_state := VA_GetMasterMute(MICName)
-if(mic_state = 0) && (MICName="")
-    MsgBox, The microphone is not muted.
-
+if(mic_state = 0) && (MICName !="") && !GetKeyState("RAlt","P")
+{
+    VA_SetMasterMute(1, MICName)
+    mic_state = 1 ;ไมค์ปิดแล้ว
+    MsgBox, The microphone is not muted by the action. Check related programs. (Now, Mute command has sent again.)
+}
 SetTimer, MakesureMicrophonewasmuted, OFF
 return
 
@@ -2890,7 +2886,7 @@ Loop
         if(mic_state = "")
             break
         ;VA_SetMasterMute(!mic_state, "capture:" A_Index)
-        if(!mic_state = 0)
+        if(mic_state = 1)
             action := "Unmuted"
         else
             action := "Muted"
