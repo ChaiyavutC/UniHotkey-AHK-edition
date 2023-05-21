@@ -1,9 +1,9 @@
-# UniHotkey AHKv1.1 edition v.26.2
+# UniHotkey AHKv1.1 edition v.26.4
 UniHotkey AHk edition is a utility program that provides you much more convenient way to use and manage your Windows PC.
 
 ## Now this repository is not in active development. [This](https://github.com/ChaiyavutC/UniHotkey-Python-edition) is the new version which is more active.
 
-![image](https://github.com/ChaiyavutC/UniHotkey-AHK-edition/assets/134151822/b3e9e6b9-407d-4138-8170-e9101c9f1f0a)
+![Screenshot](https://github.com/ChaiyavutC/UniHotkey-AHK-edition/assets/134151822/8ddb8fe4-b33d-45fa-a383-c4779dc2b680)
 
 ## How to use
 1. Just download the lastest from [here](https://github.com/ChaiyavutC/UniHotkey-AHK-edition/releases)
@@ -60,7 +60,9 @@ UniHotkey AHk edition is a utility program that provides you much more convenien
 - Support Audio Relay Volume sync by `Insert` and `Pause Break` hotkeys. (need SoundVolumeView.exe)
 - can simply press num instead of click action in the main UI
 - check mute mic command actually works or not
-- Support "AudioRelay.exe" by `Insert` and `Pause Break`
+- TrayIcon
+- Suspend Global Hotkey option
+- Start Up option built in program
 - autosave variables immediately
   1. Last Run - date to launch daily check-in site
   2. MicNamae
