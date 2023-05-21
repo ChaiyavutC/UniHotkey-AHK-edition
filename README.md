@@ -1,7 +1,7 @@
 # UniHotkey AHKv1.1 edition v.26.4
 UniHotkey AHk edition is a utility program that provides you much more convenient way to use and manage your Windows PC.
 
-## Now this repository is not in active development. [This](https://github.com/ChaiyavutC/UniHotkey-Python-edition) is the new version which is more active.
+## Now this repository is not in active development any more. [This repository](https://github.com/ChaiyavutC/UniHotkey-Python-edition) is newer version which is more active.
 
 ![Screenshot](https://github.com/ChaiyavutC/UniHotkey-AHK-edition/assets/134151822/8ddb8fe4-b33d-45fa-a383-c4779dc2b680)
 
