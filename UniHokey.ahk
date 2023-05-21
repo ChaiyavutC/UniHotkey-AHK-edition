@@ -1,7 +1,7 @@
 #SingleInstance Force
 #NoEnv ; Recommended for performance and compatibility with future AutoHotkey releases.
 ; #Warn  ; Enable warnings to assist with detecting common errors.
-#NoTrayIcon
+;#NoTrayIcon
 SendMode Input ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir% ; Ensures a consistent starting directory.
 
@@ -13,14 +13,19 @@ SetWorkingDir %A_ScriptDir% ; Ensures a consistent starting directory.
 |----------------------------------------------------------|
 */
 
+Menu,Tray,NoStandard
+Menu,Tray,Click,1
+Menu,Tray,Add,Main UI,ClickHandler
+Menu,Tray,Add,E&xit, TerminateProgram
 
 ;# Default text
 quote = "
 apostrophe = '
 Percent := "%"
+comma := ","
 
 ;# Version
-version :="UniHotkey | v.26.2 by ChaiyavutC"
+version :="UniHotkey | v.26.3 by ChaiyavutC"
 
 ;# Library
 #Include D:\Autohotkey\#Library\Gdip_All.ahk
@@ -141,6 +146,7 @@ if !FileExist(FullSaveFilePath)
         IndicatorX=-4
         IndicatorY=1076
         mainmonitoris=
+        SuspendGlobalHotkey=0
     ), UHotkey.ini
 }
 
@@ -170,12 +176,23 @@ IniRead, TooltipY, UHotkey.ini, Initialization, TooltipY
 IniRead, IndicatorX, UHotkey.ini, Initialization, IndicatorX
 IniRead, IndicatorY, UHotkey.ini, Initialization, IndicatorY
 IniRead, mainmonitoris, UHotkey.ini, Initialization, mainmonitoris
+IniRead, SuspendGlobalHotkey, UHotkey.ini, Initialization, SuspendGlobalHotkey
+
+if (SuspendGlobalHotkey = 1)
+{
+    Suspend, On
+}
+Else
+{
+    Suspend, Off
+}
 
 ;# Mute mic by MICName
 mic_state := VA_GetMasterMute(MICName)
 if(MICName!="")
 {
     VA_SetMasterMute(1, MICName)
+    ToolTip, Muted Mic already, -30 , 1028, 2
     mic_state = 1
 }
 Else
@@ -244,34 +261,54 @@ else
 ;# --------------------------DailySiteCheckIn---------------------------
 if (A_DD != LastRun)
 {
-    if (DailySiteCheckInBrowser != "")
+    if (DailySiteCheckInBrowser = "Google Chrome") && (DailySiteCheckIn != "")
     {
-        Run, %DailySiteCheckInBrowser%,,UseErrorLevel
+        Run, C:\Program Files\Google\Chrome\Application\chrome.exe %quote%%DailySiteCheckIn%%quote%,,UseErrorLevel
+        ;# Get the date of run program
+        LastRun = %A_DD%
+    }
+    else if (DailySiteCheckInBrowser = "MS Edge") && (DailySiteCheckIn != "")
+    {
+        Run, C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe %quote%%DailySiteCheckIn%%quote%,,UseErrorLevel
+        ;# Get the date of run program
+        LastRun = %A_DD%
+    }
+    else if (DailySiteCheckInBrowser = "Firefox") && (DailySiteCheckIn != "")
+    {
+        Run, C:\Program Files\Mozilla Firefox\firefox.exe %quote%%DailySiteCheckIn%%quote%,,UseErrorLevel
+        ;# Get the date of run program
+        LastRun = %A_DD%
+    }
+    else if (DailySiteCheckInBrowser = "Opera GX") && (DailySiteCheckIn != "")
+    {
+        Run, C:\Users\%A_UserName%\AppData\Local\Programs\Opera GX\launcher.exe %quote%%DailySiteCheckIn%%quote%,,UseErrorLevel
+        ;# Get the date of run program
+        LastRun = %A_DD%
+    }
+    else if (DailySiteCheckInBrowser = "Opera") && (DailySiteCheckIn != "")
+    {
+        Run, C:\Users\%A_UserName%\AppData\Local\Programs\Opera\launcher.exe %quote%%DailySiteCheckIn%%quote%,,UseErrorLevel
+        ;# Get the date of run program
+        LastRun = %A_DD%
+    }
+    else if (DailySiteCheckInBrowser = "Brave") && (DailySiteCheckIn != "")
+    {
+        Run, C:\Users\%A_UserName%\AppData\Local\BraveSoftware\Brave-Browser\Application\brave.exe %quote%%DailySiteCheckIn%%quote%,,UseErrorLevel
+        ;# Get the date of run program
+        LastRun = %A_DD%
+    }
+    Else if (DailySiteCheckInBrowser != "") && (DailySiteCheckIn != "")
+    {
+        Run, %DailySiteCheckInBrowser% %quote%%DailySiteCheckIn%%quote%,,UseErrorLevel
+        ;# Get the date of run program
+        LastRun = %A_DD%
     }
     ; if can't run properly
-    if (ErrorLevel = "ERROR")
+    if (ErrorLevel = "ERROR") && (DailySiteCheckIn != "") && (DailySiteCheckInBrowser != "")
     {
         ToolTip, Error to run browser, %TooltipX%, %TooltipY%, 2
     }
-
-    ; wait for browser
-    sleep 2000
-
-    if (DailySiteCheckIn != "")
-    {
-        Run, %DailySiteCheckIn%,,UseErrorLevel
-    }
-    ; if can't run properly
-    if (ErrorLevel = "ERROR")
-    {
-        ToolTip, Error to go to daily check-in site, %TooltipX%, %TooltipY%, 2
-    }
 }
-;# Get the date of run program
-LastRun = %A_DD%
-
-;# Today checked
-GuiControl,2:, DailySiteCheckIn_Text, DailySiteCheckIn | Today checked
 
 ;# Save variables to file
 gosub, Save
@@ -281,7 +318,21 @@ SetTimer ,Loop, 5000
 return
 
 ;# --------------------------Create Main GUI---------------------------
+ClickHandler:
+CoordMode, Mouse, Screen
+MouseGetPos, x5, y5
+x6 := x5 -250
+y6 := y5 - 600
+Goto, LaunchMainUI
+return
+
 PgUp & PgDn::
+CoordMode, Mouse, Screen
+MouseGetPos, x5, y5
+x6 := x5 - 250
+y6 := y5 - 200
+
+LaunchMainUI:
     ; Check whether the Main UI used to launch?
     if (guimainrun = 0)
     {
@@ -293,10 +344,7 @@ PgUp & PgDn::
         }
         
         ; Cal the position of UI
-        CoordMode, Mouse, Screen
-        MouseGetPos, x5, y5
-        x6 := x5 - 250
-        y6 := y5 - 200
+        
 
         ; The Main UI is running
         guimainrun = 1
@@ -364,18 +412,28 @@ PgUp & PgDn::
         {
             Gui, 2: Add, Text, x5 y220 w110 h17 vStopWatchShow,StopWatch is disable
         }
-        Gui, 2: Add, Text, x220 y378 w350 h17 vTimeIdle,TimeIdleKey : 0 sec, TimeIdleMouse : 0 sec
+        Gui, 2: Add, Text, x220 y374 w350 h17 vTimeIdle,TimeIdleKey : 0 sec, TimeIdleMouse : 0 sec
         if (TimeIdleCheck = 1)
         {
-            Gui, 2: Add, CheckBox, x220 y395 w350 h17 vTimeIdleCheck +Checked gac_idle_checking,Idle checking - AutoMuteMic
+            Gui, 2: Add, CheckBox, x220 y390 w350 h17 vTimeIdleCheck +Checked gac_idle_checking,Idle checking - AutoMuteMic
         }
         else
         {
-            Gui, 2: Add, CheckBox, x220 y395 w350 h17 vTimeIdleCheck gac_idle_checking,Idle checking - AutoMuteMic
+            Gui, 2: Add, CheckBox, x220 y390 w350 h17 vTimeIdleCheck gac_idle_checking,Idle checking - AutoMuteMic
         }
+
+        if (SuspendGlobalHotkey = 1)
+        {
+            Gui, 2: Add, CheckBox, x220 y410 w100 h25 vSuspendGlobalHotkey +Checked gAc_SuspendGlobalHotkey,SuspendGlobal`nHotkey
+        }
+        else
+        {
+            Gui, 2: Add, CheckBox, x220 y410 w100 h25 vSuspendGlobalHotkey gAc_SuspendGlobalHotkey,SuspendGlobal`nHotkey
+        }
+
         Gui, 2: Add, Button, x120 y140 w80 h30 gResetBackground hWndhBtn1, Reset background
-        if (Dark_Mode = 1)
-            ImageButton.Create(hBtn1, IBBtnStyles*)
+        ;if (Dark_Mode = 1)
+            ;ImageButton.Create(hBtn1, IBBtnStyles*)
 
         if (autocollapsebookmarkbar = 1)
         {
@@ -402,17 +460,6 @@ PgUp & PgDn::
         if (Dark_Mode = 1)
             ImageButton.Create(hBtn1, IBBtnStyles*)
 
-        if (mic_state = 0)
-        {
-            GuiControl,2:, ClickMic, Toggle Mode (Mic is ON)
-            GuiControl,2: Disable,MICNameSelectDDL
-        }
-        else
-        {
-            GuiControl,2:, ClickMic, Toggle Mode (Mic is OFF)
-            GuiControl,2: Enable,MICNameSelectDDL
-        }
-        
         ;# Find list of available microphone(s)
         gosub, FindMicName
 
@@ -421,8 +468,17 @@ PgUp & PgDn::
         Gui, 2: Add, DropDownList, x230 y112 w230 h100 vMICNameSelectDDL gAc_MICName_Change,%MicName_list%
         GuiControl,2: ChooseString, MICNameSelectDDL, %MICName%
 
+        mic_state := VA_GetMasterMute(MICName)
         if (mic_state = 1)
-            GuiControl,2: Disable, MICNameSelectDDL
+        {
+            GuiControl,2:, ClickMic, Toggle Mode (Mic is OFF)
+            GuiControl,2: Disable,MICNameSelectDDL
+        }
+        else
+        {
+            GuiControl,2:, ClickMic, Toggle Mode (Mic is ON)
+            GuiControl,2: Enable,MICNameSelectDDL
+        }
 
         if (EnablePushtotalk=1)
         {
@@ -481,10 +537,10 @@ PgUp & PgDn::
             CtlColors.Attach(edit1, "1E1E1E", "FFFFFF")
 
         Gui, 2: Add, Text, x225 y265 w25 h16, Path
-        Gui, 2: Add, Combobox, x247 y261 w212 h100 vDailySiteCheckInBrowser gAc_DailySiteCheckInBrowser hwndedit1,C:\Program Files\Google\Chrome\Application\chrome.exe|C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe|C:\Program Files\Mozilla Firefox\firefox.exe
+        Gui, 2: Add, Combobox, x247 y261 w212 h100 vDailySiteCheckInBrowser gAc_DailySiteCheckInBrowser hwndedit1,Google Chrome|MS Edge|Firefox|Opera GX|Opera|Brave
 
         ;Add custom path to list if it doesn't in the list.
-        if (DailySiteCheckInBrowser = "C:\Program Files\Google\Chrome\Application\chrome.exe") || (DailySiteCheckInBrowser = "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe") || (DailySiteCheckInBrowser = "C:\Program Files\Mozilla Firefox\firefox.exe")
+        if (DailySiteCheckInBrowser = "Google Chrome") || (DailySiteCheckInBrowser = "MS Edge") || (DailySiteCheckInBrowser = "Firefox") || (DailySiteCheckInBrowser = "Opera GX") || (DailySiteCheckInBrowser = "Opera") || (DailySiteCheckInBrowser = "Brave")
         {}
         Else
         {
@@ -517,20 +573,20 @@ PgUp & PgDn::
         
         if (Dark_Mode =1)
         {
-            Gui, 2: Add, Checkbox, x410 y410 w80 h23 +checked gAc_Dark_Mode vDark_Mode, Dark Mode
+            Gui, 2: Add, Checkbox, x418 y410 w80 h23 +checked gAc_Dark_Mode vDark_Mode, Dark Mode
         }
         else
         {
-            Gui, 2: Add, Checkbox, x410 y410 w80 h23 gAc_Dark_Mode vDark_Mode, Dark Mode
+            Gui, 2: Add, Checkbox, x418 y410 w80 h23 gAc_Dark_Mode vDark_Mode, Dark Mode
         }
 
         if (NotiPopup =1)
         {
-            Gui, 2: Add, Checkbox, x320 y410 w80 h23 +checked gAc_NotiPopup vNotiPopup, NotiPopup
+            Gui, 2: Add, Checkbox, x330 y410 w80 h23 +checked gAc_NotiPopup vNotiPopup, NotiPopup
         }
         else
         {
-            Gui, 2: Add, Checkbox, x320 y410 w80 h23 gAc_NotiPopup vNotiPopup, NotiPopup
+            Gui, 2: Add, Checkbox, x330 y410 w80 h23 gAc_NotiPopup vNotiPopup, NotiPopup
         }
 
         Gui, 2: Add, Text, x5 y414 w95 h16, Tooltip Location  X:
@@ -569,10 +625,6 @@ PgUp & PgDn::
     }
     else
     {
-        CoordMode, Mouse, Screen
-        MouseGetPos, x5, y5
-        x6 := x5 - 250
-        y6 := y5 - 200
         Gui, 2: Show, w500 h440 x%x6% y%y6%,
 
         ; The Main UI is not hiding right now
@@ -794,7 +846,7 @@ if (rightMonitorHeight = "") || (rightMonitorWidth = "") || (leftMonitorHeight =
 }
 Else
 {
-    Msgbox, You can press PageUp + PageDown to launch the Main UI
+    Msgbox, You can press PageUp + PageDown or right click icon at tray icon to launch the Main UI
     Gui 7:Destroy
 }
 Gosub, Save
@@ -850,6 +902,7 @@ Save:
         IndicatorX=%IndicatorX%
         IndicatorY=%IndicatorY%
         mainmonitoris=%mainmonitoris%
+        SuspendGlobalHotkey=%SuspendGlobalHotkey%
     ), UHotkey.ini
 return
 
@@ -896,9 +949,25 @@ ac_idle_checking:
     Gosub, Save
 return
 
+Ac_SuspendGlobalHotkey:
+    Gui 2:Default
+    GuiControlGet, SuspendGlobalHotkey
+    Gosub, Save
+    if (SuspendGlobalHotkey = 1)
+    {
+        Suspend, On
+    }
+    Else
+    {
+        Suspend, Off
+    }
+return
+
 Ac_AutoCollapseBookmarkBar:
     Gui 2:Default
     GuiControlGet, autocollapsebookmarkbar
+    if (SuspendGlobalHotkey = 1)
+        MsgBox, Suspend Global Hotkey is on this feature will not working.
     Gosub, Save
 return
 
@@ -954,6 +1023,8 @@ return
 AcDetectDiscordMic:
     Gui 2:Default
     GuiControlGet, DetectDiscordMic
+    if (SuspendGlobalHotkey = 1)
+        MsgBox, Suspend Global Hotkey is on this feature will not working.
     Gosub, Save
 return
 
@@ -1032,6 +1103,11 @@ Gosub, Save
 return
 
 StopWatch:
+    if (SuspendGlobalHotkey=1)
+    {
+        MsgBox, Please %comma% Enable Global Hotkey to use this feature
+        return
+    }
     if (enablestopwatch = 0 && stopwatchworking = 0)
     {
         GuiControl,2:, stopwatchbutt,StopWtach is detecting
@@ -1179,8 +1255,10 @@ return
 OnClipboardChange:
 if (TooltipNoti = 0)
     return
-if (TooltipX = "") && (TooltipY = "")
+
+if (TooltipX = "") || (TooltipY = "")
     return
+
 if A_EventInfo = 2 ; Clipboard contains something entirely non-text such as a picture.
 {
     ToolTip,Copied non-text,%TooltipX%, %TooltipY%, 2
@@ -1256,23 +1334,43 @@ return
 ;Decrease Vol
 Insert::
     Send {Volume_Down}
-    process, exist, audiorelay-backend.exe
+    /*
+    process, exist, AudioRelay.exe
     if errorlevel
-    {
+    { 
         SoundGet, master_volume
+
+        run "D:\Ice (PC)\EXE\SoundVolumeView\SoundVolumeView.exe" /SetVolume "AudioRelay.Backend" %master_volume%
+        if (ErrorLevel != "ERROR")
+            return
+
+        master_volume := % Format("{:.0f}",master_volume)
+        ;Tooltip, %master_volume%
+        setWindowVol("ahk_exe audiorelay-backend.exe",master_volume)
         setWindowVol("ahk_exe AudioRelay.exe",master_volume)
     }
+    */
 return
 
 ;Increase vol
 Pause::
     Send {Volume_Up}
-    process, exist, audiorelay-backend.exe
+    /*
+    process, exist, AudioRelay.exe
     if errorlevel
     {
         SoundGet, master_volume
+        
+        run "D:\Ice (PC)\EXE\SoundVolumeView\SoundVolumeView.exe" /SetVolume "AudioRelay.Backend" %master_volume%
+        if (ErrorLevel != "ERROR")
+            return
+
+        master_volume := % Format("{:.0f}",master_volume)
+        ;Tooltip, %master_volume%
+        setWindowVol("ahk_exe audiorelay-backend.exe",master_volume)
         setWindowVol("ahk_exe AudioRelay.exe",master_volume)
     }
+    */
 return
 
 ;Mute Unmute System Mic
