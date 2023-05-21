@@ -25,7 +25,7 @@ Percent := "%"
 comma := ","
 
 ;# Version
-version :="UniHotkey | v.26.3 by ChaiyavutC"
+version :="UniHotkey | v.26.4 by ChaiyavutC"
 
 ;# Library
 #Include D:\Autohotkey\#Library\Gdip_All.ahk
@@ -147,6 +147,7 @@ if !FileExist(FullSaveFilePath)
         IndicatorY=1076
         mainmonitoris=
         SuspendGlobalHotkey=0
+        EnableStartup=0
     ), UHotkey.ini
 }
 
@@ -177,6 +178,7 @@ IniRead, IndicatorX, UHotkey.ini, Initialization, IndicatorX
 IniRead, IndicatorY, UHotkey.ini, Initialization, IndicatorY
 IniRead, mainmonitoris, UHotkey.ini, Initialization, mainmonitoris
 IniRead, SuspendGlobalHotkey, UHotkey.ini, Initialization, SuspendGlobalHotkey
+IniRead, EnableStartup, UHotkey.ini, Initialization, EnableStartup
 
 if (SuspendGlobalHotkey = 1)
 {
@@ -415,11 +417,11 @@ LaunchMainUI:
         Gui, 2: Add, Text, x220 y374 w350 h17 vTimeIdle,TimeIdleKey : 0 sec, TimeIdleMouse : 0 sec
         if (TimeIdleCheck = 1)
         {
-            Gui, 2: Add, CheckBox, x220 y390 w350 h17 vTimeIdleCheck +Checked gac_idle_checking,Idle checking - AutoMuteMic
+            Gui, 2: Add, CheckBox, x220 y390 w160 h17 vTimeIdleCheck +Checked gac_idle_checking,Idle checking - AutoMuteMic
         }
         else
         {
-            Gui, 2: Add, CheckBox, x220 y390 w350 h17 vTimeIdleCheck gac_idle_checking,Idle checking - AutoMuteMic
+            Gui, 2: Add, CheckBox, x220 y390 w160 h17 vTimeIdleCheck gac_idle_checking,Idle checking - AutoMuteMic
         }
 
         if (SuspendGlobalHotkey = 1)
@@ -578,6 +580,15 @@ LaunchMainUI:
         else
         {
             Gui, 2: Add, Checkbox, x418 y410 w80 h23 gAc_Dark_Mode vDark_Mode, Dark Mode
+        }
+
+        if (EnableStartup =1)
+        {
+            Gui, 2: Add, Checkbox, x418 y390 w80 h23 +checked gAc_EnableStartup vEnableStartup,Startup
+        }
+        else
+        {
+            Gui, 2: Add, Checkbox, x418 y390 w80 h23 gAc_EnableStartup vEnableStartup,Startup
         }
 
         if (NotiPopup =1)
@@ -903,7 +914,53 @@ Save:
         IndicatorY=%IndicatorY%
         mainmonitoris=%mainmonitoris%
         SuspendGlobalHotkey=%SuspendGlobalHotkey%
+        EnableStartup=%EnableStartup%
     ), UHotkey.ini
+return
+
+Ac_EnableStartup:
+Gui 2:Default
+GuiControlGet, EnableStartup
+EnableStartup := !EnableStartup
+
+    scriptPath := A_ScriptFullPath
+    shortcutPath := "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\UniHotkey-Startup.lnk"
+
+    if (!A_IsAdmin)
+    {
+        Tooltip, This script is not running with administrator privileges. Run this script agian with administrator privileges.,%TooltipX%, %TooltipY%,2
+        GuiControl,2: ,EnableStartup, 0
+        return
+    }
+
+    If (EnableStartup = 1)
+    {
+        ; Script is already running with administrator privileges, remove it from startup
+        FileDelete, %shortcutPath%
+        Tooltip, The script will no longer run at startup with administrator privileges.,%TooltipX%, %TooltipY%,2
+    }
+    Else 
+    {
+        ; Script is not startup running with administrator privileges, add it to startup
+        CreateShortcut(scriptPath, shortcutPath)
+        Tooltip, The script will now run at startup with administrator privileges.,%TooltipX%, %TooltipY%,2
+        
+    }
+
+    CreateShortcut(targetPath, shortcutPath)
+    {
+    shell := ComObjCreate("WScript.Shell")
+    shortcut := shell.CreateShortcut(shortcutPath)
+    shortcut.TargetPath := targetPath
+    shortcut.WorkingDirectory := A_WorkingDir
+
+    ; Set the "Run as Administrator" flag
+    shortcutHotkey := 0x20 | shortcut.Hotkey
+    shortcut.Hotkey := shortcutHotkey
+    
+    shortcut.Save()
+    }
+Gosub, Save
 return
 
 Ac_NotiPopup:
