@@ -25,7 +25,7 @@ Percent := "%"
 comma := ","
 
 ;# Version
-version :="UniHotkey | v.26.4 by ChaiyavutC"
+version :="UniHotkey | v.26.5 by ChaiyavutC"
 
 ;# Library
 #Include D:\Autohotkey\#Library\Gdip_All.ahk
@@ -66,9 +66,6 @@ S_SS =00 ;00เป็นค่าdefault
 ; The Addition Menu is not launch yer
 EnableFocusChange = 0 ;0เป็นค่าdefault
 
-;Tooltip Noti is not hided yet
-WaitForReturnTooltipNoti = 0 ;0เป็นค่าdefault
-
 ;The Default window must be 100% opacity
 ActiveWinTranspa := 255 ;0เป็นค่าdefault ทึบ 100%
 
@@ -94,7 +91,9 @@ guimainrun = 0
 ;# Save file not existed
 if !FileExist(FullSaveFilePath)
 {
-    ToolTip, Creating save file, -30 , 1028, 2
+    ToolTip, Creating save file,,,2
+    sleep 500
+    ToolTip,,,,2
 
     SysGet, MonitorCount, MonitorCount
     if (MonitorCount == 2)
@@ -194,7 +193,9 @@ mic_state := VA_GetMasterMute(MICName)
 if(MICName!="")
 {
     VA_SetMasterMute(1, MICName)
-    ToolTip, Muted Mic already, -30 , 1028, 2
+    ToolTip, Muted Mic already,%TooltipX%,%TooltipY%, 2
+    sleep 200
+    ToolTip,,,, 2
     mic_state = 1
 }
 Else
@@ -232,9 +233,6 @@ if FileExist(SplashImage)
 }
 
 ;Set Dark Mode
-Gui 2:Default
-GuiControlGet, Dark_Mode
-Gui 2:destroy
 
 ;# Dark mode for all UIs
 if (Dark_Mode = 1)
@@ -584,11 +582,11 @@ LaunchMainUI:
 
         if (EnableStartup =1)
         {
-            Gui, 2: Add, Checkbox, x418 y390 w80 h23 +checked gAc_EnableStartup vEnableStartup,Startup
+            Gui, 2: Add, Checkbox, x418 y390 w80 h17 +checked gAc_EnableStartup vEnableStartup,Startup
         }
         else
         {
-            Gui, 2: Add, Checkbox, x418 y390 w80 h23 gAc_EnableStartup vEnableStartup,Startup
+            Gui, 2: Add, Checkbox, x418 y390 w80 h17 gAc_EnableStartup vEnableStartup,Startup
         }
 
         if (NotiPopup =1)
@@ -703,8 +701,7 @@ if (A_TimeIdleKeyboard > 120000 && A_TimeIdleMouse > 120000 && TimeIdleCheck=1)
                     }
 
                 Gui, 1: Color, FF0000
-                ;SoundPlay, %A_ScriptDir%\mute.wav
-                ;run C:\Program Files (x86)\foobar2000\foobar2000.exe /immediate /play "%A_ScriptDir%\mute.wav" /hide 
+                SoundPlay, %A_ScriptDir%\mute.wav
                 mic_state = 1
                 break
             }
@@ -733,13 +730,10 @@ if (A_TimeIdleKeyboard > 120000 && A_TimeIdleMouse > 120000 && TimeIdleCheck=1)
 MouseGetPos, MToHideToolX, MToHideToolY
 If ( Abs(MToHideToolX-TooltipX) < 50 && Abs(MToHideToolY-TooltipY) < 20 )
 {
-    ToolTip,Hide,%TooltipX%,%TooltipY%, 2
-    sleep 100
     ToolTip,,,,2
 }
 
 ;# Temporary hide Indicators (Supports custom Indicator position)
-
 if(Abs(MToHideToolX-IndicatorX) < 10) && (Abs(MToHideToolY-IndicatorY) < 10)
 {
     Gui, 1: -AlwaysOnTop
@@ -752,78 +746,7 @@ Else
     if (EnableToggleMic = 1) || (EnableDiscordMic = 1)
         Settimer, MicIndicatorOnTop, 1
 }
-
-if (TooltipNoti = 0) and (WaitForReturnTooltipNoti = 0)
-        return
-
-;Check Window or Full screen https://www.autohotkey.com/board/topic/38882-detect-fullscreen-application/
-IfWinNotActive, ahk_class WorkerW
-{
-    activeWindow := WinActive("A")
-    if activeWindow = 0
-    {
-        return
-    }
-    WinGetPos, x, y, width, height, ahk_id %activeWindow%
-
-    xmid := x+(width/2)
-    ymid := y+(height/2)
-
-    if (WaitForReturnTooltipNoti = 1)
-    {
-        isFullScreen := isWindowFullScreen( "A" )
-    }
-
-    ;Right monitor is main
-    if (WaitForReturnTooltipNoti = 0) and (xmid < 0) and (mainmonitoris = "Right Monitor") ;at left monitor
-    {
-        isFullScreen := isWindowFullScreen( "A" )
-        if isFullScreen = 1
-        {
-            ToolTip,,,,2
-            WaitForReturnTooltipNoti = 1
-            TooltipNoti = 0
-            GuiControl,2:, TooltipNoti, Tooltip noti OFF
-        }
-    }
-    ;Left monitor is main
-    else if (WaitForReturnTooltipNoti = 0) and (xmid > leftMonitorWidth) and (mainmonitoris = "Left Monitor") ;at right monitor
-        {
-            isFullScreen := isWindowFullScreen( "A" )
-            if isFullScreen = 1
-            {
-                ToolTip,,,,2
-                WaitForReturnTooltipNoti = 1
-                TooltipNoti = 0
-                GuiControl,2:, TooltipNoti, Tooltip noti OFF
-            }
-        }
-    
-    else if (WaitForReturnTooltipNoti = 1) and ( xmid > 0 || isFullScreen = 0 )
-    {
-        WaitForReturnTooltipNoti = 0
-        TooltipNoti = 1
-        GuiControl,2:, TooltipNoti, Tooltip noti On
-        SetTimer, CheckLangAgain, 10
-    }
-}
 Return
-
-isWindowFullScreen( winTitle ) {
-	;checks if the specified window is full screen
-	
-	winID := WinExist( winTitle )
-
-	If ( !winID )
-		Return false
-
-	WinGet style, Style, ahk_id %WinID%
-	WinGetPos ,,,winW,winH, %winTitle%
-	; 0x800000 is WS_BORDER.
-	; 0x20000000 is WS_MINIMIZE.
-	; no border and not minimized
-	Return ((style & 0x20800000) or winH < A_ScreenHeight or winW < A_ScreenWidth) ? false : true
-}
 ;-----------------------------------------------------------------------------
 Ac_rightMonitorHeight:
 Gui 7:Default
