@@ -25,7 +25,7 @@ Percent := "%"
 comma := ","
 
 ;# Version
-version :="UniHotkey | v.26.5 by ChaiyavutC"
+version :="UniHotkey | v.26.6 by ChaiyavutC"
 
 ;# Library
 #Include D:\Autohotkey\#Library\Gdip_All.ahk
@@ -41,7 +41,7 @@ CoordMode, Pixel, Screen
 ;# Set Title Match mode to include
 SetTitleMatchMode,2
 
-;# Save file\
+;# Save file path
 FullSaveFilePath := A_ScriptDir "\" "UHotkey" ".ini"
 
 ;# -------------------- Custom Variable --------------------
@@ -75,6 +75,12 @@ GUI1showed = 0
 
 ;The MainUI is not launch yet
 guimainhide = 1
+
+;Set no exist recording app (no streamer mode) at start
+Streamer_Mode_AppExist = 0
+
+;
+Idle_Mode_is_On = 0
 
 /*;Button Colour Class_Imagebutton (Didn't use)
 IBBtnStyles := [ [0, 0x801E1E1E, , 0xFFFFFFFF, 0, , 0x848484, 1]      ; normal
@@ -123,23 +129,23 @@ if !FileExist(FullSaveFilePath)
         LastRun=
         MICName=
         TooltipNoti=1
-        dismic=
+        dismic=0
         Dark_Mode=0
         NotiPopup=0
         DailySiteCheckIn=
         DailySiteCheckInBrowser=
         DetectDiscordMic=0
-        TimeIdleCheck=1
+        TimeIdleCheck=0
         SyncMic=0
         EnablePushtotalk=0
         leftMonitorWidth=%leftMonitorWidth%
         leftMonitorHeight=%leftMonitorHeight%
         rightMonitorWidth=%rightMonitorWidth%
         rightMonitorHeight=%rightMonitorHeight%
-        EnableToggleMic=1
+        EnableToggleMic=0
         EnableDiscordMic=0
-        autocollapsebookmarkbar=
-        SpeakLang=1
+        autohidebookmarkbar=0
+        SpeakLang=0
         TooltipX=-30 
         TooltipY=1028
         IndicatorX=-4
@@ -147,6 +153,9 @@ if !FileExist(FullSaveFilePath)
         mainmonitoris=
         SuspendGlobalHotkey=0
         EnableStartup=0
+        Set_Mic_Volume_at=100
+        Always_set_Mic_Vol=0
+        ToggleMicSound=1
     ), UHotkey.ini
 }
 
@@ -169,7 +178,7 @@ IniRead, rightMonitorWidth, UHotkey.ini, Initialization, rightMonitorWidth
 IniRead, rightMonitorHeight, UHotkey.ini, Initialization, rightMonitorHeight
 IniRead, EnableToggleMic, UHotkey.ini, Initialization, EnableToggleMic
 IniRead, EnableDiscordMic, UHotkey.ini, Initialization, EnableDiscordMic
-IniRead, autocollapsebookmarkbar, UHotkey.ini, Initialization, autocollapsebookmarkbar
+IniRead, autohidebookmarkbar, UHotkey.ini, Initialization, autohidebookmarkbar
 IniRead, SpeakLang, UHotkey.ini, Initialization, SpeakLang
 IniRead, TooltipX, UHotkey.ini, Initialization, TooltipX
 IniRead, TooltipY, UHotkey.ini, Initialization, TooltipY
@@ -178,6 +187,10 @@ IniRead, IndicatorY, UHotkey.ini, Initialization, IndicatorY
 IniRead, mainmonitoris, UHotkey.ini, Initialization, mainmonitoris
 IniRead, SuspendGlobalHotkey, UHotkey.ini, Initialization, SuspendGlobalHotkey
 IniRead, EnableStartup, UHotkey.ini, Initialization, EnableStartup
+IniRead, Detect_Streamer_Mode, UHotkey.ini, Initialization, Detect_Streamer_Mode
+IniRead, Set_Mic_Volume_at, UHotkey.ini, Initialization, Set_Mic_Volume_at
+IniRead, Always_set_Mic_Vol, UHotkey.ini, Initialization, Always_set_Mic_Vol
+IniRead, ToggleMicSound, UHotkey.ini, Initialization, ToggleMicSound
 
 if (SuspendGlobalHotkey = 1)
 {
@@ -189,18 +202,20 @@ Else
 }
 
 ;# Mute mic by MICName
-mic_state := VA_GetMasterMute(MICName)
-if(MICName!="")
+if(EnableToggleMic = 1)
 {
-    VA_SetMasterMute(1, MICName)
-    ToolTip, Muted Mic already,%TooltipX%,%TooltipY%, 2
-    sleep 200
-    ToolTip,,,, 2
-    mic_state = 1
-}
-Else
-{
-    mic_state = 0
+    if(MICName!="")
+    {
+        VA_SetMasterMute(1, MICName)
+        ToolTip, Muted Mic already,%TooltipX%,%TooltipY%, 2
+        sleep 200
+        ToolTip,,,, 2
+        mic_state = 1
+    }
+    Else
+    {
+        mic_state = 0
+    }
 }
 
 ;# Create Mic indicator GUI
@@ -233,7 +248,6 @@ if FileExist(SplashImage)
 }
 
 ;Set Dark Mode
-
 ;# Dark mode for all UIs
 if (Dark_Mode = 1)
 {
@@ -314,7 +328,7 @@ if (A_DD != LastRun)
 gosub, Save
 
 ;# Always Loop
-SetTimer ,Loop, 5000
+SetTimer ,Loop, 10000
 return
 
 ;# --------------------------Create Main GUI---------------------------
@@ -384,23 +398,27 @@ LaunchMainUI:
         Gui, 2: Add, Button, x20 y110 w80 h30 gTranslateShow hWndhBtn1, Google translate
         if (Dark_Mode = 1)
             ImageButton.Create(hBtn1, IBBtnStyles*)
-        Gui, 2: Add, Text, x8 y119 w10 h12, 4
+        Gui, 2: Add, Text, x8 y119 w10 h12, 3
+
         Gui, 2: Add, Button, x20 y140 w80 h30 gForgotEntoTh hWndhBtn1,ลืมเปลี่ยนภาษา EngtoTh
         if (Dark_Mode = 1)
             ImageButton.Create(hBtn1, IBBtnStyles*)
-        Gui, 2: Add, Text, x8 y149 w10 h12, 5
+        Gui, 2: Add, Text, x8 y149 w10 h12, 4
+
         Gui, 2: Add, Button, x20 y170 w80 h30 gForgotThtoEn hWndhBtn1,ลืมเปลี่ยนภาษา ThtoEng
         if (Dark_Mode = 1)
             ImageButton.Create(hBtn1, IBBtnStyles*)
-        Gui, 2: Add, Text, x8 y179 w10 h12, 6
+        Gui, 2: Add, Text, x8 y179 w10 h12, 5
+
         Gui, 2: Add, Button, x120 y20 w80 h30 gWindowManager hWndhBtn1, WindowManager
         if (Dark_Mode = 1)
             ImageButton.Create(hBtn1, IBBtnStyles*)
-        Gui, 2: Add, Text, x108 y29 w10 h12, 7
+        Gui, 2: Add, Text, x108 y29 w10 h12, 6
+
         Gui, 2: Add, Button, x120 y50 w80 h30 gSpy hWndhBtn1, Run Spy
         if (Dark_Mode = 1)
             ImageButton.Create(hBtn1, IBBtnStyles*)
-        Gui, 2: Add, Text, x108 y59 w10 h12, 8
+        Gui, 2: Add, Text, x108 y59 w10 h12, 7
         Gui, 2: Add, Button, x120 y80 w80 h60 gStopWatch vstopwatchbutt hWndhBtn1, StopWatch
         ;if (Dark_Mode = 1)
             ;ImageButton.Create(hBtn1, IBBtnStyles*)
@@ -435,28 +453,28 @@ LaunchMainUI:
         ;if (Dark_Mode = 1)
             ;ImageButton.Create(hBtn1, IBBtnStyles*)
 
-        if (autocollapsebookmarkbar = 1)
+        if (autohidebookmarkbar = 1)
         {
-            Gui, 2: Add, Checkbox, x117 y177 w86 h23 +checked gAc_AutoCollapseBookmarkBar vautocollapsebookmarkbar, AutoCollapseBookmarkBar
+            Gui, 2: Add, Checkbox, x117 y177 w86 h23 +checked gAc_autohidebookmarkbar vautohidebookmarkbar, AutoHideBookmarkBar
         }
         else
         {
-            Gui, 2: Add, Checkbox, x117 y177 w86 h23 gAc_AutoCollapseBookmarkBar vautocollapsebookmarkbar, AutoCollapseBookmarkBar
+            Gui, 2: Add, Checkbox, x117 y177 w86 h23 gAc_autohidebookmarkbar vautohidebookmarkbar, AutoHideBookmarkBar
         }
 
         Gui, 2: Add, Groupbox, x220 y1 w250 h146, Toggle Microphone
         
         if (EnableToggleMic=1)
         {
-            Gui, 2: Add, Checkbox, x230 y18 w120 h23 +checked gAcEnableToggleMic vEnableToggleMic, Toggle Active Mic
+            Gui, 2: Add, Checkbox, x229 y0 w150 h20 +checked gAcEnableToggleMic vEnableToggleMic, Toggle System Microphone
         }
         else
         {
-            Gui, 2: Add, Checkbox, x230 y18 w120 h23 gAcEnableToggleMic vEnableToggleMic, Toggle Active Mic
+            Gui, 2: Add, Checkbox, x229 y0 w150 h20 gAcEnableToggleMic vEnableToggleMic, Toggle System Microphone
         }
 
-        Gui, 2: Add, Text, x225 y61 w21 h25, RAlt
-        Gui, 2: Add, Button, x249 y43 w75 h50 gClickMic vClickMic hWndhBtn1,
+        Gui, 2: Add, Text, x225 y55 w21 h25, RAlt
+        Gui, 2: Add, Button, x249 y37 w75 h50 gClickMic vClickMic hWndhBtn1,
         if (Dark_Mode = 1)
             ImageButton.Create(hBtn1, IBBtnStyles*)
 
@@ -480,24 +498,54 @@ LaunchMainUI:
             GuiControl,2: Enable,MICNameSelectDDL
         }
 
-        if (EnablePushtotalk=1)
+        if (ToggleMicSound=1)
         {
-            Gui, 2: Add, Checkbox, x331 y48 w120 h23 +checked gAcEnablePushtotalk vEnablePushtotalk, Enable Push to talk
+                Gui, 2: Add, Checkbox, x331 y20 w105 h23 +checked gAcToggleMicSound vToggleMicSound,ToggleMicSound
         }
         else
         {
-            Gui, 2: Add, Checkbox, x331 y48 w120 h23 gAcEnablePushtotalk vEnablePushtotalk, Enable Push to talk
+                Gui, 2: Add, Checkbox, x331 y20 w105 h23 gAcToggleMicSound vToggleMicSound,ToggleMicSound
+        }
+
+        if (EnablePushtotalk=1)
+        {
+            Gui, 2: Add, Checkbox, x331 y40 w120 h23 +checked gAcEnablePushtotalk vEnablePushtotalk, Enable Push to talk
+        }
+        else
+        {
+            Gui, 2: Add, Checkbox, x331 y40 w120 h23 gAcEnablePushtotalk vEnablePushtotalk, Enable Push to talk
         }
 
         if (SyncMic=1)
         {
-            Gui, 2: Add, Checkbox, x331 y65 w137 h23 +checked gAcSyncMic vSyncMic, SyncDiscordAndPC'sMic
+            Gui, 2: Add, Checkbox, x331 y60 w137 h23 +checked gAcSyncMic vSyncMic, SyncDiscordAndPC'sMic
         }
         else
         {
-            Gui, 2: Add, Checkbox, x331 y65 w137 h23 gAcSyncMic vSyncMic, SyncDiscordAndPC'sMic
+            Gui, 2: Add, Checkbox, x331 y60 w137 h23 gAcSyncMic vSyncMic, SyncDiscordAndPC'sMic
         }
+
+        if(EnableToggleMic = 0)
+            GuiControl,2: Disable,ToggleMicSound
+            GuiControl,2: Disable,EnablePushtotalk
+            GuiControl,2: Disable,SyncMic
+
+        if (Always_set_Mic_Vol=1)
+        {
+            Gui, 2: Add, Checkbox, x331 y80 w97 h23 +checked gAcAlways_set_Mic_Vol vAlways_set_Mic_Vol,AlwaysSetVolAt:
+        }
+        else
+        {
+            Gui, 2: Add, Checkbox, x331 y80 w97 h23 gAcAlways_set_Mic_Vol vAlways_set_Mic_Vol,AlwaysSetVolAt:
+        }
+
+        Gui, 2: Add, Edit, x430 y81 w30 h20 vSet_Mic_Volume_at limit3 gAc_Set_Mic_Volume_at hwndedit1 ,%Set_Mic_Volume_at%
+        if (Dark_Mode = 1)
+            CtlColors.Attach(edit1, "1E1E1E", "FFFFFF")
         
+        if(Always_set_Mic_Vol = 0)
+            GuiControl,2: Disable,Set_Mic_Volume_at
+
         if (EnableDiscordMic=1)
         {
             Gui, 2: Add, Checkbox, x229 y173 w120 h23 +checked gAcEnableDiscordMic vEnableDiscordMic, Discord Mic Indicator
@@ -509,12 +557,15 @@ LaunchMainUI:
 
         if (DetectDiscordMic=1)
         {
-            Gui, 2: Add, Checkbox, x355 y173 w137 h23 +checked gAcDetectDiscordMic vDetectDiscordMic, DetectDiscordMic
+            Gui, 2: Add, Checkbox, x355 y173 w105 h23 +checked gAcDetectDiscordMic vDetectDiscordMic, DetectDiscordMic
         }
         else
         {
-            Gui, 2: Add, Checkbox, x355 y173 w137 h23 gAcDetectDiscordMic vDetectDiscordMic, DetectDiscordMic
+            Gui, 2: Add, Checkbox, x355 y173 w105 h23 gAcDetectDiscordMic vDetectDiscordMic, DetectDiscordMic
         }
+
+        if(EnableDiscordMic = 0)
+            GuiControl,2: Disable,DetectDiscordMic
 
         Gui, 2: Add, Groupbox, x220 y150 w250 h60, Toggle Discord Mic
         
@@ -552,7 +603,7 @@ LaunchMainUI:
         if (Dark_Mode = 1)
             CtlColors.Attach(edit1, "1E1E1E", "FFFFFF")
 
-        Gui, 2: Add, Button, x470 y1 w30 h30 gTerminateProgram hWndhBtn1, Exit
+        Gui, 2: Add, Button, x470 y0 w30 h30 gTerminateProgram hWndhBtn1, Exit
         if (Dark_Mode = 1)
             ImageButton.Create(hBtn1, IBBtnStyles*)
         Gui 2:Default
@@ -596,6 +647,15 @@ LaunchMainUI:
         else
         {
             Gui, 2: Add, Checkbox, x330 y410 w80 h23 gAc_NotiPopup vNotiPopup, NotiPopup
+        }
+
+        if (Detect_Streamer_Mode =1)
+        {
+            Gui, 2: Add, Checkbox, x220 y350 w120 h23 +checked gAc_Streamer_Mode vDetect_Streamer_Mode,Auto Streamer Mode
+        }
+        else
+        {
+            Gui, 2: Add, Checkbox, x220 y350 w120 h23 gAc_Streamer_Mode vDetect_Streamer_Mode,Auto Streamer Mode
         }
 
         Gui, 2: Add, Text, x5 y414 w95 h16, Tooltip Location  X:
@@ -645,8 +705,15 @@ return
 Loop:
 
 ;# Check mic's state
-if (MICName != "")
+if (MICName != "") && (EnableToggleMic = 1)
+{
     mic_state := VA_GetMasterMute(MICName)
+}
+
+if (MICName != "") && (Always_set_Mic_Vol = 1)
+{
+    VA_SetMasterVolume(Set_Mic_Volume_at,,MICName)
+}
 
 if (guimainhide = 0)
 {
@@ -658,94 +725,108 @@ if (guimainhide = 0)
 }
 
 ;# Check Idle for 2 mins >> Mute mic
-if (A_TimeIdleKeyboard > 120000 && A_TimeIdleMouse > 120000 && TimeIdleCheck=1)
+if (A_TimeIdleKeyboard > 120000 && A_TimeIdleMouse > 120000 && TimeIdleCheck=1 && Idle_Mode_is_On = 0 && mic_state = 0)
 {
     count := 5
-    centicount := 0
     loop
     {
-        centicount := centicount+0.1
-        if (centicount >= 1)
+        if (count < 0)
         {
-            centicount := 0
-            ToolTip, Idle mode will TooltipNoti on in %count% s. Move mouse to cancel, %TooltipX%, %TooltipY%, 2
-            count := count-1
+            ToolTip,Idle mode - Mic was muted, %TooltipX%, %TooltipY%, 2
+            Idle_Mode_is_On = 1
+
+            if (MICName="")
+            {
+                MsgBox, Can't mute the mic by Idle. Please select Microphone name in The Main UI.
+                break
+            }
+            ;# Mute mic by MICName
+            if(MICName!="")
+            {
+                VA_SetMasterMute(1, MICName)
+                mic_state = 1
+                gosub, MakesureMicrophonewasmuted
+            }
+            
+            if (guimainhide = 0)
+            {
+                GuiControl,2:, ClickMic, Toggle Mode (Mic is OFF by Idle)
+                GuiControl,2: Enable,MICNameSelectDDL
+            }
+            
+            if (EnableToggleMic = 1)
+            {
+                Gui, 1: Color, FF0000
+            }
+            
+            if (ToggleMicSound = 1) && (Streamer_Mode_AppExist = 0)
+            {
+                SoundPlay, %A_ScriptDir%\mute.wav
+            }
+            break
         }
-        sleep 100
+
+        ToolTip, System's microphone will be muted %count% sec. Move mouse or press any key to cancel, %TooltipX%, %TooltipY%, 2
+        count := count-1
+
+        sleep 980
         if (A_TimeIdleKeyboard < 120000 || A_TimeIdleMouse < 120000)
         {
             ToolTip,,,,2
-            return
+            break
         }
-        if (count <= 0)
-        {
-            ToolTip,Idle mode - Mic was muted, %TooltipX%, %TooltipY%, 2
-            if (mic_state = 0)
-            {
-                if (MICName="")
-                {
-                    MsgBox, Please select Microphone to toggle it in The Main UI.
-                    return
-                }
-                ;# Mute mic by MICName
-                if(MICName!="")
-                    VA_SetMasterMute(1, MICName)
-
-                if (guimainhide = 0)
-                    {
-                        GuiControl,2:, ClickMic, Toggle Mode (Mic is OFF by Idle)
-                        if (guimainhide = 0)
-                        {
-                            GuiControl,2: Enable,MICNameSelectDDL
-                        }
-                    }
-
-                Gui, 1: Color, FF0000
-                SoundPlay, %A_ScriptDir%\mute.wav
-                mic_state = 1
-                break
-            }
-            loop 
-            {
-                sleep 4980
-                if (guimainrun = 0)
-                {
-                    Sec_TimeIdleMou := A_TimeIdleMouse/1000
-                    Sec_TimeIdleKey := A_TimeIdleKeyboard/1000
-                    Sec_TimeIdleKey := % Format("{:.3f}",Sec_TimeIdleKey)
-                    Sec_TimeIdleMou := % Format("{:.3f}",Sec_TimeIdleMou)
-                    GuiControl,2:, TimeIdle, TimeIdleKey : %Sec_TimeIdleKey% sec, TimeIdleMouse : %Sec_TimeIdleMou% sec
-                }
-                if (A_TimeIdleKeyboard < 120000 || A_TimeIdleMouse < 120000)
-                {
-                    ToolTip,,,,2
-                    break
-                }
-            }
-        }
+        
     }
 }
-
-;# Temporary hide TooltipNoti (Supports custom TooltipNoti position)
-MouseGetPos, MToHideToolX, MToHideToolY
-If ( Abs(MToHideToolX-TooltipX) < 50 && Abs(MToHideToolY-TooltipY) < 20 )
+Else if (A_TimeIdleKeyboard < 120000 || A_TimeIdleMouse < 120000) && TimeIdleCheck = 1 && Idle_Mode_is_On = 1 && mic_state = 0
 {
+    Idle_Mode_is_On = 0
     ToolTip,,,,2
 }
 
+if (EnableToggleMic = 1) || (TooltipNoti = 1)
+{
+    MouseGetPos, MToHideX, MToHideY
+}
+
+;# Temporary hide TooltipNoti (Supports custom TooltipNoti position)
+if (TooltipNoti = 1)
+{
+    If (Abs(MToHideX-TooltipX) < 30 && Abs(MToHideY-TooltipY) < 20 )
+    {
+        ToolTip,,,,2
+    }
+}
+
 ;# Temporary hide Indicators (Supports custom Indicator position)
-if(Abs(MToHideToolX-IndicatorX) < 10) && (Abs(MToHideToolY-IndicatorY) < 10)
+if (EnableToggleMic = 1) || (EnableDiscordMic = 1)
 {
-    Gui, 1: -AlwaysOnTop
-    Gui, 4: -AlwaysOnTop
-    WinSet, Bottom,,WindowMute NoActivate
-    WinSet, Bottom,,DiscordMute NoActivate
-}
-Else
-{
-    if (EnableToggleMic = 1) || (EnableDiscordMic = 1)
+    if(Abs(MToHideX-IndicatorX) < 4) && (Abs(MToHideY-IndicatorY) < 4)
+    {
+        Gui, 1: -AlwaysOnTop
+        Gui, 4: -AlwaysOnTop
+        WinSet, Bottom,,SystemMute
+        WinSet, Bottom,,DiscordMute
+    }
+    Else
+    {
         Settimer, MicIndicatorOnTop, 1
+    }
 }
+
+if (Detect_Streamer_Mode = 1)
+{
+    if( WinExist("ahk_exe obs64.exe") || WinExist("ahk_exe Action.exe") || WinExist("ahk_exe AudioRelay.exe"))
+    {
+        Streamer_Mode_AppExist = 1
+    }
+    Else
+    {
+        Streamer_Mode_AppExist = 0
+    }
+}
+
+
 Return
 ;-----------------------------------------------------------------------------
 Ac_rightMonitorHeight:
@@ -801,6 +882,7 @@ Ac_MICName_Change:
 Gui 2:Default
 GuiControlGet, selectedValue, , MICNameSelectDDL
 MICName := selectedValue
+gosub, FindMicName
 Gosub, Save
 return
 
@@ -829,7 +911,7 @@ Save:
         rightMonitorHeight=%rightMonitorHeight%
         EnableToggleMic=%EnableToggleMic%
         EnableDiscordMic=%EnableDiscordMic%
-        autocollapsebookmarkbar=%autocollapsebookmarkbar%
+        autohidebookmarkbar=%autohidebookmarkbar%
         SpeakLang=%SpeakLang%
         TooltipX=%TooltipX%
         TooltipY=%TooltipY%
@@ -838,6 +920,10 @@ Save:
         mainmonitoris=%mainmonitoris%
         SuspendGlobalHotkey=%SuspendGlobalHotkey%
         EnableStartup=%EnableStartup%
+        Detect_Streamer_Mode=%Detect_Streamer_Mode%
+        Always_set_Mic_Vol=%Always_set_Mic_Vol%
+        Set_Mic_Volume_at=%Set_Mic_Volume_at%
+        ToggleMicSound=%ToggleMicSound%
     ), UHotkey.ini
 return
 
@@ -851,7 +937,7 @@ EnableStartup := !EnableStartup
 
     if (!A_IsAdmin)
     {
-        Tooltip, This script is not running with administrator privileges. Run this script agian with administrator privileges.,%TooltipX%, %TooltipY%,2
+        Tooltip, This script is not running with administrator privileges. Run this program agian with administrator privileges.,%TooltipX%, %TooltipY%,2
         GuiControl,2: ,EnableStartup, 0
         return
     }
@@ -889,6 +975,13 @@ return
 Ac_NotiPopup:
 Gui 2:Default
 GuiControlGet, NotiPopup
+Gosub, Save
+return
+
+Ac_Streamer_Mode:
+Gui 2:Default
+GuiControlGet, Detect_Streamer_Mode
+Streamer_Mode_AppExist = 0
 Gosub, Save
 return
 
@@ -936,6 +1029,7 @@ Ac_SuspendGlobalHotkey:
     if (SuspendGlobalHotkey = 1)
     {
         Suspend, On
+        MsgBox, Warning! Some features may not work as usual.
     }
     Else
     {
@@ -943,9 +1037,9 @@ Ac_SuspendGlobalHotkey:
     }
 return
 
-Ac_AutoCollapseBookmarkBar:
+Ac_autohidebookmarkbar:
     Gui 2:Default
-    GuiControlGet, autocollapsebookmarkbar
+    GuiControlGet, autohidebookmarkbar
     if (SuspendGlobalHotkey = 1)
         MsgBox, Suspend Global Hotkey is on this feature will not working.
     Gosub, Save
@@ -954,6 +1048,26 @@ return
 AcSyncMic:
     Gui 2:Default
     GuiControlGet, SyncMic
+    Gosub, Save
+return
+
+AcAlways_set_Mic_Vol:
+    Gui 2:Default
+    GuiControlGet, AcAlways_set_Mic_Vol
+    Gosub, Save
+    if (Always_set_Mic_Vol = 1)
+    {
+        GuiControl,2: Enable,Set_Mic_Volume_at
+    }
+    Else
+    {
+        GuiControl,2: Disable,Set_Mic_Volume_at
+    }
+return
+
+Ac_Set_Mic_Volume_at:
+    Gui 2:Default
+    GuiControlGet, Set_Mic_Volume_at
     Gosub, Save
 return
 
@@ -967,7 +1081,8 @@ AcEnableToggleMic:
             GuiControl,2: Disable,EnablePushtotalk
             GuiControl,2: Disable,SyncMic
             GuiControl,2: Disable,ClickMic
-            GuiControl,2: Disable,MICNameSelectDDL
+            GuiControl,2: Disable,ToggleMicSound
+            GuiControl,2: Disable,Set_Mic_Volume_at
             Gui, 1: Hide
             if (EnableDiscordMic=0)
                 {
@@ -975,23 +1090,43 @@ AcEnableToggleMic:
                     GuiControl,2: Disable,IndicatorY
                 }
             }
+            if (mic_state=1)
+            {
+                    GuiControl,2: Enable,MICNameSelectDDL
+            }
         }
         Else
         {
             if (guimainhide = 0)
             {
-            GuiControl,2: Enable,EnablePushtotalk
-            GuiControl,2: Enable,SyncMic
-            GuiControl,2: Enable,ClickMic
-            GuiControl,2: Enable,IndicatorX
-            GuiControl,2: Enable,IndicatorY
+                GuiControl,2: Enable,EnablePushtotalk
+                GuiControl,2: Enable,SyncMic
+                GuiControl,2: Enable,ClickMic
+                GuiControl,2: Enable,ToggleMicSound
+                GuiControl,2: Enable,IndicatorX
+                GuiControl,2: Enable,IndicatorY
+                if (Always_set_Mic_Vol=1)
+                {
+                    GuiControl,2: Enable,Set_Mic_Volume_at
+                }
+                if (mic_state=0)
+                {
+                    GuiControl,2: Enable,MICNameSelectDDL
+                }
+                else if (mic_state = 1)
+                {
+                    GuiControl,2: Disable,MICNameSelectDDL
+                }
             }
-            Gui, 1: Show, x%IndicatorX% y%IndicatorY% w8 h4, WindowMute NoActivate
-            if (mic_state=0)
-                GuiControl,2: Enable,MICNameSelectDDL
-            
+            Gui, 1: Show, x%IndicatorX% y%IndicatorY% w8 h4 NoActivate, SystemMute
         }
         Gosub, Save
+return
+
+AcToggleMicSound:
+    Gui 2:Default
+    GuiControlGet, ToggleMicSound
+    Gosub, Save
 return
 
 AcEnablePushtotalk:
@@ -1035,7 +1170,7 @@ Else
         GuiControl,2: Enable,IndicatorY
         }
         IndicatorY2 := IndicatorY-4
-        Gui, 4: Show, x%IndicatorX% y%IndicatorY2% w8 h2, DiscordMute NoActivate
+        Gui, 4: Show, x%IndicatorX% y%IndicatorY2% w8 h2 NoActivate, DiscordMute
     }
     Gosub, Save
 return
@@ -1062,24 +1197,28 @@ AcTooltipX:
 Gui 2:Default
 GuiControlGet, TooltipX
 Gosub, Save
+Gosub, CheckLangAgain
 return
 
 AcTooltipY:
 Gui 2:Default
 GuiControlGet, TooltipY
 Gosub, Save
+Gosub, CheckLangAgain
 return
 
 AcIndicatorX:
 Gui 2:Default
 GuiControlGet, IndicatorX
 Gosub, Save
+Gosub, MicIndicatorOnTop
 return
 
 AcIndicatorY:
 Gui 2:Default
 GuiControlGet, IndicatorY
 Gosub, Save
+Gosub, MicIndicatorOnTop
 return
 
 StopWatch:
@@ -1124,7 +1263,7 @@ AcGUI_HH:
 return
 
 ResetBackground:
-    WinMove, ahk_class WorkerW, , -1928, -128
+    WinMove, ahk_class WorkerW, , -1920, -120
 return
 
 WindowManager:
@@ -1384,7 +1523,11 @@ UnmuteMic:
     VA_SetMasterMute(0, MICName)
     mic_state = 0 ;ไมค์เปิดแล้ว
 
-    SoundPlay, %A_ScriptDir%\unmute.wav
+    if (ToggleMicSound = 1) && (Streamer_Mode_AppExist = 0)
+    {
+        SoundPlay, %A_ScriptDir%\unmute.wav
+    }
+    
     Gui, 1: Color, 1BFF00
     if (mic_state = dismic && SyncMic=1)
     {
@@ -1418,7 +1561,11 @@ UnmuteMic:
             }
                 VA_SetMasterMute(1, MICName)
             
-            SoundPlay, %A_ScriptDir%\mute.wav
+            if (ToggleMicSound = 1) && (Streamer_Mode_AppExist = 0)
+            {
+                SoundPlay, %A_ScriptDir%\mute.wav
+            }
+            
             Gui, 1: Color, FF0000
             if (dismic = 1 && SyncMic=1)
             {
@@ -1434,6 +1581,7 @@ UnmuteMic:
             mic_state = 1
         }
     }
+    SetTimer, MicIndicatorOnTop, 1
     SetTimer, UnmuteMic, OFF
 return
 
@@ -1448,7 +1596,11 @@ muteMic:
     VA_SetMasterMute(1, MICName)
     mic_state = 1 ;ไมค์ปิดแล้ว
     
-    SoundPlay, %A_ScriptDir%\mute.wav
+    if (ToggleMicSound = 1) && (Streamer_Mode_AppExist = 0)
+    {
+        SoundPlay, %A_ScriptDir%\mute.wav
+    }
+
     Gui, 1: Color, FF0000
     if (mic_state = dismic && SyncMic=1)
     {
@@ -1462,14 +1614,21 @@ muteMic:
         GuiControl,2:, ClickMic, Toggle Mode (Mic is OFF)
         GuiControl,2: Disable,MICNameSelectDDL
     }
+    SetTimer, MicIndicatorOnTop, 1
     SetTimer, muteMic, OFF
 return
 
+
 MicIndicatorOnTop:
+;If active window is in Full Screen mode, shouldn't set indicators to top.
+isFullScreen := isWindowFullScreen( "A" )
+if isFullScreen=1
+    Return
+
 if (EnableToggleMic=1)
 {
     Gui, 1:+AlwaysOnTop
-    WinMove, WindowMute, , %IndicatorX%,%IndicatorY%
+    WinMove, SystemMute, , %IndicatorX%,%IndicatorY%
 }
 if (EnableDiscordMic=1)
 {
@@ -1853,10 +2012,10 @@ if (EnableFocusChange = 0)
 }
 EnableFocusChange = 1
 vCurY2 := vCurY2-50
-Gui, 6: Show, w472 h50 x%vCurX2% y%vCurY2% NA,Addition Menu
+Gui, 6: Show, w472 h50 x%vCurX2% y%vCurY2%,Addition Menu
 WinSet, Transparent, 255, Addition Menu
 WinSet, Transparent, 200, Addition Menu
-if (NotiPopup = 1)
+if (NotiPopup = 1) && (Streamer_Mode_AppExist = 0)
 {
     SplashImage = %A_ScriptDir%\UHotkey Open shortcut.png
     if FileExist(SplashImage)
@@ -2175,7 +2334,7 @@ if (MonitorCount = 1)
         }
         WinActivate ahk_id %activeWindow% ;Needed - otherwise another window may overlap it
     }
-    if (NotiPopup = 1)
+    if (NotiPopup = 1) && (Streamer_Mode_AppExist = 0)
     {
         SplashImage = %A_ScriptDir%\UHotkey Move to another.png
         if FileExist(SplashImage)
@@ -2204,12 +2363,12 @@ if (EnableDiscordMic = 1)
     {
         dismic = 0
     }
-    SetTimer, MicIndicatorOnTop, 1
 }
 return
 
 ;Left click action
 ~LButton::
+
     if (enablestopwatch = 1)
     {
         enablestopwatch = 0
@@ -2300,7 +2459,7 @@ return
         }
     }
 
-    if (autocollapsebookmarkbar = 1)
+    if (autohidebookmarkbar = 1)
     {
     sleep 2
     if (WinActive(" - Google Chrome") || WinActive(" - Microsoft​ Edge") || WinActive(" - Brave"))
@@ -2309,11 +2468,11 @@ return
         {
             return
         }
-        CoordMode, Pixel, Window
-        PixelGetColor, OutputVar, 14, 89
+        CoordMode, Pixel, Relative
+        PixelGetColor, DetectBrowserColor, 9, 76
         SetTimer, bookmarktab_onaction, OFF
-        ;Tooltip, %OutputVar%
-        if (OutputVar = 0x3A3635 || OutputVar = 0x3B3B3B || OutputVar = 0xE4E1B7 || OutputVar = 0x433430)
+        PixelGetColor, OutputVar, 12, 89
+        if (OutputVar = DetectBrowserColor)
         {
             bookmarktab_on = 1
         }
@@ -2325,8 +2484,8 @@ return
             if (bookmarktab_on = 0)
             {
                 SetTimer, bookmarktab_onaction, 100 ;แก้เป็น 400 ถ้าต้องการให้เป็นแบบ hover
-                autocollapsebookmarkbar = 0
-                GuiControl,2: Disable, autocollapsebookmarkbar
+                autohidebookmarkbar = 0
+                GuiControl,2: Disable, autohidebookmarkbar
             }
             else if (bookmarktab_on = 1)
             {
@@ -2334,6 +2493,15 @@ return
                 bookmarktab_on = 0
                 goto, bookmarktab_check
             }		
+        }
+    }
+
+    if (EnableToggleMic = 1) || (EnableDiscordMic = 1)
+    {
+        sleep 2
+        if (WinActive("ahk_class Windows.UI.Core.CoreWindow")) || (WinActive("ahk_class Shell_SecondaryTrayWnd")) || (WinActive("ahk_class NotifyIconOverflowWindow")) || (WinActive("ahk_class Shell_TrayWnd"))
+        {
+            SetTimer, MicIndicatorOnTop,1
         }
     }
 return
@@ -2377,17 +2545,14 @@ if !LangID := GetKeyboardLanguage(WinActive("A"))
 if (LangID = 0x041e) ;ภาษาไทย
 {
 	ToolTip,ไทย,,,1
-		;run C:\Program Files (x86)\foobar2000\foobar2000.exe  /immediate /play "%A_ScriptDir%\thai.wav"  /hide 
 }
 else if (LangID = 0x0409) ;ภาษาอังกฤษ
 {
     ToolTip,ENG,,,1
-    ;run C:\Program Files (x86)\foobar2000\foobar2000.exe  /immediate /play "%A_ScriptDir%\eng.wav"  /hide 
 }
 else if (LangID = 0x0411) ;JP
 {
     ToolTip ,JP,,, 1
-	;run C:\Program Files (x86)\foobar2000\foobar2000.exe  /immediate /play "%A_ScriptDir%\JP.wav"  /hide 
 }
 sleep 100
 ToolTip,,,,1
@@ -2395,7 +2560,6 @@ SetTimer ,IndicatorLangguageLClick, OFF
 return
 
 bookmarktab_onaction:
-    ;Tooltip, %bookmarktab_on% Detect
     if WinActive("New Tab") || WinActive(".pdf")
     {
         return
@@ -2406,9 +2570,9 @@ bookmarktab_onaction:
     else
     {
         SetTimer, bookmarktab_onaction, OFF
-        autocollapsebookmarkbar = 1
-        GuiControl,2: Enable, autocollapsebookmarkbar
-        GuiControl,2:,autocollapsebookmarkbar,1
+        autohidebookmarkbar = 1
+        GuiControl,2: Enable, autohidebookmarkbar
+        GuiControl,2:,autohidebookmarkbar,1
         return
     }
     CoordMode, Mouse, Window
@@ -2421,9 +2585,9 @@ bookmarktab_onaction:
     {
         ;Tooltip, %bookmarktab_on% Detect
         SetTimer, bookmarktab_onaction, OFF
-        autocollapsebookmarkbar = 1
-        GuiControl,2: Enable, autocollapsebookmarkbar
-        GuiControl,2:,autocollapsebookmarkbar,1
+        autohidebookmarkbar = 1
+        GuiControl,2: Enable, autohidebookmarkbar
+        GuiControl,2:,autohidebookmarkbar,1
         return
     }
     if (OutputVarY > 73 && OutputVarY < 82) && (OutputVarX < width && OutputVarX > 0) && (WinActive(" - Google Chrome") || WinActive(" - Microsoft​ Edge") || WinActive(" - Brave")) && bookmarktab_on = 0
@@ -2436,9 +2600,9 @@ bookmarktab_onaction:
             ;Tooltip, 1 %stopbookmarkcheck% %bookmarktab_on%
             if (stopbookmarkcheck = 0)
             {
-                autocollapsebookmarkbar = 1
-                GuiControl,2: Enable, autocollapsebookmarkbar
-                GuiControl,2:,autocollapsebookmarkbar,1
+                autohidebookmarkbar = 1
+                GuiControl,2: Enable, autohidebookmarkbar
+                GuiControl,2:,autohidebookmarkbar,1
                 return
             }
             sleep 100
@@ -2449,7 +2613,7 @@ bookmarktab_onaction:
             {
                 if (stopbookmarkcheck = 0)
                 {
-                    autocollapsebookmarkbar = 1
+                    autohidebookmarkbar = 1
                     return
                 }
                 Send, ^+b
@@ -2463,9 +2627,9 @@ bookmarktab_onaction:
             {
                 ;Tooltip, %bookmarktab_on% Detect
                 SetTimer, bookmarktab_onaction, OFF
-                autocollapsebookmarkbar = 1
-                GuiControl,2: Enable, autocollapsebookmarkbar
-                GuiControl,2:,autocollapsebookmarkbar,1
+                autohidebookmarkbar = 1
+                GuiControl,2: Enable, autohidebookmarkbar
+                GuiControl,2:,autohidebookmarkbar,1
                 break
             }
         }
@@ -2478,16 +2642,16 @@ bookmarktab_onaction:
         ;Tooltip, %bookmarktab_on% Detect
         ;Tooltip,
         SetTimer, bookmarktab_onaction, OFF
-        autocollapsebookmarkbar = 1
-        GuiControl,2: Enable, autocollapsebookmarkbar
-        GuiControl,2:,autocollapsebookmarkbar,1
+        autohidebookmarkbar = 1
+        GuiControl,2: Enable, autohidebookmarkbar
+        GuiControl,2:,autohidebookmarkbar,1
         return
     }
     ;ตั้งแต่บรรทัดนี้
     SetTimer, bookmarktab_onaction, OFF
-    autocollapsebookmarkbar = 1
-    GuiControl,2: Enable, autocollapsebookmarkbar
-    GuiControl,2:,autocollapsebookmarkbar,1
+    autohidebookmarkbar = 1
+    GuiControl,2: Enable, autohidebookmarkbar
+    GuiControl,2:,autohidebookmarkbar,1
     ;ถึงบรรทัดนี้ ทำให้เปลี่ยนเป็นแบบ click แทน hover
 return
 
@@ -2496,11 +2660,6 @@ return
 ~LCtrl & ~LShift::
 while GetKeyState("LCtrl", "P") ; While right mouse button is being held:
 { ;หากกดค้าง
-    if (TooltipNoti = 1)
-    {
-        Tooltip, Waiting
-        ToolTip , Waiting, %TooltipX%, %TooltipY%, 2
-    }
     sleep 10
 }
 sleep 5
@@ -2516,11 +2675,11 @@ if (LangID = 0x041e) ;ภาษาไทย
     {
         ToolTip , ไทย, %TooltipX%, %TooltipY%, 2
     }
-    if (SpeakLang = 1)
+    if (SpeakLang = 1) && (Streamer_Mode_AppExist = 0)
     {
         SoundPlay, %A_ScriptDir%\thai.wav
     }
-    if (NotiPopup = 1)
+    if (NotiPopup = 1) && (Streamer_Mode_AppExist = 0)
     {
         SplashImage = %A_ScriptDir%\UHotkey ไทย.png
         if FileExist(SplashImage)
@@ -2529,8 +2688,6 @@ if (LangID = 0x041e) ;ภาษาไทย
             SplashImageGUI(SplashImage, "Center", ysplash, 200, False)
         }
     }
-    ToolTip, ไทย,,,1
-    ;run C:\Program Files (x86)\foobar2000\foobar2000.exe /immediate /play "%A_ScriptDir%\thai.wav" /hide 
 }
 else if (LangID = 0x0409) ;ภาษาอังกฤษ
 {
@@ -2538,11 +2695,11 @@ else if (LangID = 0x0409) ;ภาษาอังกฤษ
     {
         ToolTip , ENG, %TooltipX%, %TooltipY%, 2
     }
-    if (SpeakLang = 1)
+    if (SpeakLang = 1) && (Streamer_Mode_AppExist = 0)
     {
         SoundPlay, %A_ScriptDir%\eng.wav
     }
-    if (NotiPopup = 1)
+    if (NotiPopup = 1) && (Streamer_Mode_AppExist = 0)
     {
         SplashImage = %A_ScriptDir%\UHotkey ENG.png
         if FileExist(SplashImage)
@@ -2551,8 +2708,6 @@ else if (LangID = 0x0409) ;ภาษาอังกฤษ
             SplashImageGUI(SplashImage, "Center", ysplash, 200, False)
         }
     }
-    ToolTip, ENG,,,1
-    ;run C:\Program Files (x86)\foobar2000\foobar2000.exe /immediate /play "%A_ScriptDir%\eng.wav" /hide 
 }
 else if (LangID = 0x0411) ;JP
 {
@@ -2561,15 +2716,11 @@ else if (LangID = 0x0411) ;JP
         ToolTip , JP, %TooltipX%, %TooltipY%, 2
         
     }
-    if (SpeakLang = 1)
+    if (SpeakLang = 1) && (Streamer_Mode_AppExist = 0)
     {
         SoundPlay, %A_ScriptDir%\JP.wav
     }
-    ToolTip, JP,,,1
-    ;run C:\Program Files (x86)\foobar2000\foobar2000.exe /immediate /play "%A_ScriptDir%\JP.wav" /hide 
 }
-sleep 100
-ToolTip, ,,,1
 return
 
 ~RButton::
@@ -2587,12 +2738,9 @@ if (A_Cursor = "IBeam")
             send {LWin down}{v down}
             sleep 20
             send {LWin up}{v up}
-            vCurX2 := vCurX2+295
-            vCurY2 := vCurY2+392
-            MouseMove,vCurX2, vCurY2
             ;WaitDisableRight = 1
         }
-        else if ((vCurX1-vCurX2 < 50 or -50 < vCurX1-vCurX2) and vCurY1 > vCurY2)
+        else if (vCurY1 > vCurY2)
         {
             if (Dark_Mode = 1)
             {
@@ -2624,19 +2772,6 @@ if (A_Cursor = "IBeam")
             WinSet, Transparent, 255, Addition Menu
             WinSet, Transparent, 200, Addition Menu
         }
-    }
-}
-IfWinActive , YouTube Music,,Chrome
-{
-    CoordMode, Mouse, Screen
-    MouseGetPos, xpos, ypos
-    WinGetPos, ytX, ytY, ytWidth, ytHeight, YouTube Music,,Chrome
-    ;sleep 100
-    ;Msgbox, %ypos%
-    ;Tooltip, %ytMouseY% %ytX% %ytY% %ytWidth% %ytHeight% YouTube Music
-    if ((ypos < 1000) && (ytX=-8 && ytY=970 && ytWidth = 1936 && ytHeight = 90))
-    {
-        WinMove, YouTube Music,, 600, 200 , 700, 700,
     }
 }
 return
@@ -2696,36 +2831,44 @@ Return
 
 
 #If WinActive(version)
-Numpad1 up::
+^1::
+    loop
+    {
+        sleep 80
+        If !GetKeyState("1","P")
+            Break
+    }
 	goto, TurnMonitorOff
 
 #If WinActive(version)
-Numpad2 up::
+^2::
 	goto, Ac_TooltipNoti
 
-#If WinActive(version)
-Numpad3 up::
+;#If WinActive(version)
+;^3::
 	;goto, FindIDmic
 
 #If WinActive(version)
-Numpad4 up::
+^3::
 	goto, TranslateShow
 
 #If WinActive(version)
-Numpad5 up::
+^4::
 	goto, ForgotEntoTh
 
 #If WinActive(version)
-Numpad6 up::
+^5::
 	goto, ForgotThtoEn
 
 #If WinActive(version)
-Numpad7 up::
+^6::
 	goto, WindowManager
 
 #If WinActive(version)
-Numpad8 up::
+^7::
 	goto, Spy
+
+#If
 
 ;# Function check language
 GetKeyboardLanguage(_hWnd=0) 
@@ -3404,4 +3547,21 @@ setWindowVol(winName:="a",vol:="n"){
 	} else
 		vol/=100.0
 	VA_ISimpleAudioVolume_SetMasterVolume(volume,vol),objRelease(volume)
+}
+
+;https://www.autohotkey.com/board/topic/38882-detect-fullscreen-application/
+isWindowFullScreen( winTitle ) {
+	;checks if the specified window is full screen
+	
+	winID := WinExist( winTitle )
+
+	If ( !winID )
+		Return false
+
+	WinGet style, Style, ahk_id %WinID%
+	WinGetPos ,,,winW,winH, %winTitle%
+	; 0x800000 is WS_BORDER.
+	; 0x20000000 is WS_MINIMIZE.
+	; no border and not minimized
+	Return ((style & 0x20800000) or winH < A_ScreenHeight or winW < A_ScreenWidth) ? false : true
 }
