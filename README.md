@@ -84,3 +84,8 @@ UniHotkey AHk edition is a utility program that provides you much more convenien
   18. IndicatorX
   19. IndicatorY
   20. mainmonitoris
+  21. Startup
+  22. Detect_Streamer_Mode
+  23. Always_set_Mic_Vol
+  24. Set_Mic_Volume_at
+  25. ToggleMicSound
