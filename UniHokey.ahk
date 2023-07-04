@@ -4,6 +4,8 @@
 ;#NoTrayIcon
 SendMode Input ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir% ; Ensures a consistent starting directory.
+SetBatchLines -1
+ListLines Off
 
 /*
 |----------------------------------------------------------|
@@ -25,7 +27,7 @@ Percent := "%"
 comma := ","
 
 ;# Version
-version :="UniHotkey | v.26.6 by ChaiyavutC"
+version :="UniHotkey | v.26.9 by ChaiyavutC"
 
 ;# Library
 #Include D:\Autohotkey\#Library\Gdip_All.ahk
@@ -526,9 +528,11 @@ LaunchMainUI:
         }
 
         if(EnableToggleMic = 0)
+        {
             GuiControl,2: Disable,ToggleMicSound
             GuiControl,2: Disable,EnablePushtotalk
             GuiControl,2: Disable,SyncMic
+        }
 
         if (Always_set_Mic_Vol=1)
         {
@@ -621,7 +625,6 @@ LaunchMainUI:
         if (Dark_Mode = 1)
             CtlColors.Attach(edit1, "1E1E1E", "FFFFFF")
 
-        
         if (Dark_Mode =1)
         {
             Gui, 2: Add, Checkbox, x418 y410 w80 h23 +checked gAc_Dark_Mode vDark_Mode, Dark Mode
@@ -825,8 +828,6 @@ if (Detect_Streamer_Mode = 1)
         Streamer_Mode_AppExist = 0
     }
 }
-
-
 Return
 ;-----------------------------------------------------------------------------
 Ac_rightMonitorHeight:
@@ -930,42 +931,36 @@ return
 Ac_EnableStartup:
 Gui 2:Default
 GuiControlGet, EnableStartup
-EnableStartup := !EnableStartup
 
-    scriptPath := A_ScriptFullPath
-    shortcutPath := "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\UniHotkey-Startup.lnk"
+scriptPath := A_ScriptFullPath
+shortcutPath := "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\UniHotkey-Startup.lnk"
 
-    if (!A_IsAdmin)
-    {
-        Tooltip, This script is not running with administrator privileges. Run this program agian with administrator privileges.,%TooltipX%, %TooltipY%,2
-        GuiControl,2: ,EnableStartup, 0
-        return
-    }
+if (!A_IsAdmin)
+{
+    MsgBox, This script is not running with administrator privileges. Run this script agian with administrator privileges.
+    GuiControl,2: ,EnableStartup, 0
+    return
+}
 
-    If (EnableStartup = 1)
-    {
-        ; Script is already running with administrator privileges, remove it from startup
-        FileDelete, %shortcutPath%
-        Tooltip, The script will no longer run at startup with administrator privileges.,%TooltipX%, %TooltipY%,2
-    }
-    Else 
-    {
-        ; Script is not startup running with administrator privileges, add it to startup
-        CreateShortcut(scriptPath, shortcutPath)
-        Tooltip, The script will now run at startup with administrator privileges.,%TooltipX%, %TooltipY%,2
-        
-    }
+If (EnableStartup = 1)
+{
+    ; add it to startup
+    CreateShortcut(scriptPath, shortcutPath)
+    MsgBox, The script will always run at startup.
+}
+Else 
+{
+    ; remove it from startup
+    FileDelete, %shortcutPath%
+    MsgBox, The script will no longer run at startup.
+}
 
-    CreateShortcut(targetPath, shortcutPath)
+CreateShortcut(targetPath, shortcutPath)
     {
     shell := ComObjCreate("WScript.Shell")
     shortcut := shell.CreateShortcut(shortcutPath)
     shortcut.TargetPath := targetPath
     shortcut.WorkingDirectory := A_WorkingDir
-
-    ; Set the "Run as Administrator" flag
-    shortcutHotkey := 0x20 | shortcut.Hotkey
-    shortcut.Hotkey := shortcutHotkey
     
     shortcut.Save()
     }
@@ -1494,7 +1489,7 @@ return
 
 ;Mute Unmute System Mic
 
-*RAlt::
+*!M::
 ClickMic:
 if (EnableToggleMic = 1)
 {
@@ -2041,16 +2036,12 @@ CoordMode, Mouse, Screen
 MouseGetPos,vX1, vY1
 activeWindow := WinActive("A")
 WinGetPos, x, y, width, height, ahk_id %activeWindow%
-loop
+While GetKeyState("q","P")
 {
     MouseGetPos,vX2, vY2
     newX := 1.5*(vX2-vX1)+x
     newY := 1.5*(vY2-vY1)+y
     WinMove, ahk_id %activeWindow%, , %newX%, %newY%, Width, Height
-    If !GetKeyState("q","P")
-    {
-        Break
-    }
 }
 return
 
@@ -2451,7 +2442,7 @@ return
             }
             OutputVarY := OutputVarY -33
             sleep 10
-            MouseMove, OutputVarX, OutputVarY
+            MouseMove, OutputVarX, OutputVarY, 50
             return
         }
         Else{
@@ -2464,7 +2455,7 @@ return
     sleep 2
     if (WinActive(" - Google Chrome") || WinActive(" - Microsoft​ Edge") || WinActive(" - Brave"))
     {
-        if WinActive("New Tab") || WinActive(".pdf")
+        if WinActive("New Tab") || WinActive(".pdf") || WinActive("New Incognito Tab")
         {
             return
         }
@@ -2560,7 +2551,7 @@ SetTimer ,IndicatorLangguageLClick, OFF
 return
 
 bookmarktab_onaction:
-    if WinActive("New Tab") || WinActive(".pdf")
+    if WinActive("New Tab") || WinActive(".pdf") || WinActive("New Incognito Tab")
     {
         return
     }
